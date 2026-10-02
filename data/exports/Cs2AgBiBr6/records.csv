@@ -1,0 +1,9 @@
+record_id,material_key,source,method,method_rank,gap_ev,vbm_ev,cbm_ev,edge_reference,ip_ev,ea_ev,work_function_ev,surface_miller,is_direct,is_metal,structure_id,external_id,reference
+262686,Cs2AgBiBr6|,borlido_expt,experiment,1,2.19,,,none,,,,,,0,,borlido-mp-1078250,"Borlido et al., J. Chem. Theory Comput. 15, 5069 (2019); 472 experimental gaps with experimental structures; doi:10.1021/acs.jctc.9b00322"
+1097,Cs2AgBiBr6|,expt_gap,experiment,1,2.19,,,none,,,,,,0,,,"Zhuo, Mansouri Tehrani, Brgoch, J. Phys. Chem. Lett. 9, 1668 (2018)"
+127556,Cs2AgBiBr6|,expt_gap_kingsbury,experiment,1,2.19,,,none,,,,,,0,,mp-1078250,"Zhuo, Mansouri Tehrani, Brgoch, J. Phys. Chem. Lett. 9, 1668 (2018); cleaned by Kingsbury (matbench_expt_gap)"
+7291,Cs2AgBiBr6|,foundry_ml_exp_bandgaps,experiment,1,1.7,,,none,,,,,,0,,fdml-expgap-2355,Foundry-ML experimental band gaps (doi:10.18126/wg3u-g8vu)
+7466,Cs2AgBiBr6|,foundry_ml_exp_bandgaps,experiment,1,1.95,,,none,,,,,,0,,fdml-expgap-2353,Foundry-ML experimental band gaps (doi:10.18126/wg3u-g8vu)
+131337,Cs2AgBiBr6|,snumat,HSE06,2,2.162012,,,none,,,,,0.0,0,95048.0,SM-10697,"Kim et al., Sci. Data 7, 387 (2020); SNUMAT HSE06"
+198267,Cs2AgBiBr6|,mp_nostruct_20181018,PBE,6,1.924,,,none,,,,,,0,,mp-1078250,"Materials Project snapshot 2018-10-18 (Jain et al., APL Mater. 1, 011002 (2013))"
+131338,Cs2AgBiBr6|,snumat,PBE,6,1.298135,,,none,,,,,0.0,0,95048.0,SM-10697,"Kim et al., Sci. Data 7, 387 (2020); SNUMAT HSE06"

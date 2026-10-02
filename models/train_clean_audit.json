@@ -1,0 +1,105 @@
+{
+  "rules": [
+    {
+      "rule": "method_allow_list_aggregate",
+      "n_before": 5433,
+      "n_after": 5433,
+      "n_dropped": 0,
+      "detail": "one row per material; best method_rank among ('experiment', 'literature')",
+      "threshold": {
+        "methods": [
+          "experiment",
+          "literature"
+        ]
+      }
+    },
+    {
+      "rule": "features_composition_inner_join",
+      "n_before": 5433,
+      "n_after": 5433,
+      "n_dropped": 0,
+      "detail": "require Magpie/composition feature row",
+      "threshold": null
+    },
+    {
+      "rule": "expt_label_scatter",
+      "n_before": 5433,
+      "n_after": 5329,
+      "n_dropped": 104,
+      "detail": "drop train materials with IQR>0.5 eV or max-min>1.0 eV among experiment/literature",
+      "threshold": {
+        "max_iqr": 0.5,
+        "max_spread": 1.0
+      }
+    },
+    {
+      "rule": "physical_gap_bounds",
+      "n_before": 5329,
+      "n_after": 5326,
+      "n_dropped": 3,
+      "detail": "keep metals (Eg\u22640.001) or 0.001<Eg\u226412.0 eV",
+      "threshold": {
+        "metal_eps": 0.001,
+        "max_gap": 12.0
+      }
+    },
+    {
+      "rule": "dft_conflict",
+      "n_before": 5326,
+      "n_after": 5282,
+      "n_dropped": 44,
+      "detail": "drop experiment materials with |Eg_exp\u2212Eg_DFT|>2.0 eV (DFT \u2208 ('HSE06', 'TBmBJ'))",
+      "threshold": {
+        "max_dft_conflict": 2.0
+      }
+    },
+    {
+      "rule": "feature_nan_frac",
+      "n_before": 5282,
+      "n_after": 5266,
+      "n_dropped": 16,
+      "detail": "drop rows with >50% NaN in feature columns",
+      "threshold": {
+        "max_nan_frac": 0.5,
+        "n_feature_cols": 180
+      }
+    },
+    {
+      "rule": "edge_finite_positive_gap",
+      "n_before": 1005,
+      "n_after": 1005,
+      "n_dropped": 0,
+      "detail": "require finite CBM/VBM and gap_ev>0",
+      "threshold": null
+    },
+    {
+      "rule": "edge_gap_consistency",
+      "n_before": 1005,
+      "n_after": 990,
+      "n_dropped": 15,
+      "detail": "|(CBM\u2212VBM)\u2212Eg|\u22640.35 eV",
+      "threshold": {
+        "edge_gap_consistency": 0.35
+      }
+    },
+    {
+      "rule": "delta_cbm_outlier",
+      "n_before": 990,
+      "n_after": 809,
+      "n_dropped": 181,
+      "detail": "|\u03b4CBM|=|CBM\u2212CBM_ButlerGinley|\u22645.0 eV",
+      "threshold": {
+        "max_abs_delta_cbm": 5.0
+      }
+    }
+  ],
+  "eg_methods": [
+    "experiment",
+    "literature"
+  ],
+  "n_eg_before": 5433,
+  "n_eg_after": 5266,
+  "n_edge_before": 1005,
+  "n_edge_after": 809,
+  "note": "Filters apply to training frames only; data/materials_db.sqlite is not modified."
+}

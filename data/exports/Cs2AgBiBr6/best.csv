@@ -1,0 +1,2 @@
+material_id,material_key,formula_reduced,material_name,phase_tag,material_class,family,best_gap,best_gap_method,best_gap_source,best_cbm,best_vbm,best_edge_method,best_edge_source,n_records,gap_min,gap_max,n_with_structure
+849,Cs2AgBiBr6|,Cs2AgBiBr6,Cs2AgBiBr6,,inorganic_bulk,double_perovskite,2.19,experiment,expt_gap,,,,,8,1.298135,2.19,2

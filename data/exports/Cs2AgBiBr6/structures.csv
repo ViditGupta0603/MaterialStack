@@ -1,0 +1,2 @@
+structure_id,material_id,source,external_id,space_group_number,crystal_system,density,volume_per_atom,n_sites,e_above_hull
+95048,849,snumat,SM-10697,225,,4.736093297778049,37.238099877440234,10,

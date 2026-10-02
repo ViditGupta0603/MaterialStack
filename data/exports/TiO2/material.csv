@@ -1,0 +1,3 @@
+material_id,material_key,formula_reduced,formula_raw,material_name,phase_tag,material_class,anonymized_formula,n_elements,elements,family,is_perovskite_like,tolerance_factor,octahedral_factor,mulliken_chi
+468,TiO2|,TiO2,TiO2,TiO2,,inorganic_bulk,AB2,2,"[""O"", ""Ti""]",oxide,0,,,5.810963668874102
+68851,TiO2|2D,TiO2,TiO2,TiO2,2D,inorganic_2d,AB2,2,"[""O"", ""Ti""]",oxide,0,,,5.810963668874102

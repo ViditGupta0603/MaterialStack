@@ -1,0 +1,180 @@
+material_id,feature,value
+849,n_elements,4
+849,anonymized_formula,ABC2D6
+849,is_perovskite_like,1
+849,tolerance_factor,0.8416
+849,octahedral_factor,0.6758
+849,mulliken_chi,5.2731341714755064
+849,MagpieData minimum Number,35.0
+849,MagpieData maximum Number,83.0
+849,MagpieData range Number,48.0
+849,MagpieData mean Number,45.0
+849,MagpieData avg_dev Number,12.0
+849,MagpieData mode Number,35.0
+849,MagpieData minimum MendeleevNumber,5.0
+849,MagpieData maximum MendeleevNumber,95.0
+849,MagpieData range MendeleevNumber,90.0
+849,MagpieData mean MendeleevNumber,73.1
+849,MagpieData avg_dev MendeleevNumber,28.860000000000003
+849,MagpieData mode MendeleevNumber,95.0
+849,MagpieData minimum AtomicWeight,79.904
+849,MagpieData maximum AtomicWeight,208.9804
+849,MagpieData range AtomicWeight,129.0764
+849,MagpieData mean AtomicWeight,106.20835038
+849,MagpieData avg_dev AtomicWeight,31.565220456000002
+849,MagpieData mode AtomicWeight,79.904
+849,MagpieData minimum MeltingT,265.8
+849,MagpieData maximum MeltingT,1234.93
+849,MagpieData range MeltingT,969.1300000000001
+849,MagpieData mean MeltingT,397.73100000000005
+849,MagpieData avg_dev MeltingT,196.77360000000004
+849,MagpieData mode MeltingT,265.8
+849,MagpieData minimum Column,1.0
+849,MagpieData maximum Column,17.0
+849,MagpieData range Column,16.0
+849,MagpieData mean Column,13.0
+849,MagpieData avg_dev Column,5.2
+849,MagpieData mode Column,17.0
+849,MagpieData minimum Row,4.0
+849,MagpieData maximum Row,6.0
+849,MagpieData range Row,2.0
+849,MagpieData mean Row,4.7
+849,MagpieData avg_dev Row,0.8400000000000001
+849,MagpieData mode Row,4.0
+849,MagpieData minimum CovalentRadius,120.0
+849,MagpieData maximum CovalentRadius,244.0
+849,MagpieData range CovalentRadius,124.0
+849,MagpieData mean CovalentRadius,150.1
+849,MagpieData avg_dev CovalentRadius,37.559999999999995
+849,MagpieData mode CovalentRadius,120.0
+849,MagpieData minimum Electronegativity,0.79
+849,MagpieData maximum Electronegativity,2.96
+849,MagpieData range Electronegativity,2.17
+849,MagpieData mean Electronegativity,2.3289999999999997
+849,MagpieData avg_dev Electronegativity,0.7572000000000001
+849,MagpieData mode Electronegativity,2.96
+849,MagpieData minimum NsValence,1.0
+849,MagpieData maximum NsValence,2.0
+849,MagpieData range NsValence,1.0
+849,MagpieData mean NsValence,1.7
+849,MagpieData avg_dev NsValence,0.41999999999999993
+849,MagpieData mode NsValence,2.0
+849,MagpieData minimum NpValence,0.0
+849,MagpieData maximum NpValence,5.0
+849,MagpieData range NpValence,5.0
+849,MagpieData mean NpValence,3.3
+849,MagpieData avg_dev NpValence,2.04
+849,MagpieData mode NpValence,5.0
+849,MagpieData minimum NdValence,0.0
+849,MagpieData maximum NdValence,10.0
+849,MagpieData range NdValence,10.0
+849,MagpieData mean NdValence,8.0
+849,MagpieData avg_dev NdValence,3.2
+849,MagpieData mode NdValence,10.0
+849,MagpieData minimum NfValence,0.0
+849,MagpieData maximum NfValence,14.0
+849,MagpieData range NfValence,14.0
+849,MagpieData mean NfValence,1.4
+849,MagpieData avg_dev NfValence,2.5199999999999996
+849,MagpieData mode NfValence,0.0
+849,MagpieData minimum NValence,1.0
+849,MagpieData maximum NValence,29.0
+849,MagpieData range NValence,28.0
+849,MagpieData mean NValence,14.4
+849,MagpieData avg_dev NValence,6.040000000000001
+849,MagpieData mode NValence,17.0
+849,MagpieData minimum NsUnfilled,0.0
+849,MagpieData maximum NsUnfilled,1.0
+849,MagpieData range NsUnfilled,1.0
+849,MagpieData mean NsUnfilled,0.3
+849,MagpieData avg_dev NsUnfilled,0.41999999999999993
+849,MagpieData mode NsUnfilled,0.0
+849,MagpieData minimum NpUnfilled,0.0
+849,MagpieData maximum NpUnfilled,3.0
+849,MagpieData range NpUnfilled,3.0
+849,MagpieData mean NpUnfilled,0.9
+849,MagpieData avg_dev NpUnfilled,0.54
+849,MagpieData mode NpUnfilled,1.0
+849,MagpieData minimum NdUnfilled,0.0
+849,MagpieData maximum NdUnfilled,0.0
+849,MagpieData range NdUnfilled,0.0
+849,MagpieData mean NdUnfilled,0.0
+849,MagpieData avg_dev NdUnfilled,0.0
+849,MagpieData mode NdUnfilled,0.0
+849,MagpieData minimum NfUnfilled,0.0
+849,MagpieData maximum NfUnfilled,0.0
+849,MagpieData range NfUnfilled,0.0
+849,MagpieData mean NfUnfilled,0.0
+849,MagpieData avg_dev NfUnfilled,0.0
+849,MagpieData mode NfUnfilled,0.0
+849,MagpieData minimum NUnfilled,1.0
+849,MagpieData maximum NUnfilled,3.0
+849,MagpieData range NUnfilled,2.0
+849,MagpieData mean NUnfilled,1.2
+849,MagpieData avg_dev NUnfilled,0.36
+849,MagpieData mode NUnfilled,1.0
+849,MagpieData minimum GSvolume_pa,16.33
+849,MagpieData maximum GSvolume_pa,115.765
+849,MagpieData range GSvolume_pa,99.435
+849,MagpieData mean GSvolume_pa,45.769
+849,MagpieData avg_dev GSvolume_pa,27.998399999999997
+849,MagpieData mode GSvolume_pa,29.48
+849,MagpieData minimum GSbandgap,0.0
+849,MagpieData maximum GSbandgap,1.457
+849,MagpieData range GSbandgap,1.457
+849,MagpieData mean GSbandgap,0.8742000000000001
+849,MagpieData avg_dev GSbandgap,0.6993600000000001
+849,MagpieData mode GSbandgap,1.457
+849,MagpieData minimum GSmagmom,0.0
+849,MagpieData maximum GSmagmom,0.0
+849,MagpieData range GSmagmom,0.0
+849,MagpieData mean GSmagmom,0.0
+849,MagpieData avg_dev GSmagmom,0.0
+849,MagpieData mode GSmagmom,0.0
+849,MagpieData minimum SpaceGroupNumber,12.0
+849,MagpieData maximum SpaceGroupNumber,229.0
+849,MagpieData range SpaceGroupNumber,217.0
+849,MagpieData mean SpaceGroupNumber,107.9
+849,MagpieData avg_dev SpaceGroupNumber,71.85999999999999
+849,MagpieData mode SpaceGroupNumber,64.0
+849,0-norm,4
+849,2-norm,0.648074069840786
+849,3-norm,0.6091199348919785
+849,5-norm,0.6005237760880777
+849,7-norm,0.6000397970967368
+849,10-norm,0.6000010180820754
+849,avg s valence electrons,1.7
+849,avg p valence electrons,3.3
+849,avg d valence electrons,8.0
+849,avg f valence electrons,1.4
+849,frac s valence electrons,0.11805555555555555
+849,frac p valence electrons,0.22916666666666666
+849,frac d valence electrons,0.5555555555555556
+849,frac f valence electrons,0.09722222222222221
+849,compound possible,1.0
+849,max ionic char,0.6918673786849375
+849,avg ionic char,0.12076098368881011
+849,HOMO_energy,-0.295334
+849,LUMO_energy,-0.180198
+849,gap_AO,0.11513599999999999
+849,band center,5.273692496425926
+849,family_oxide,0
+849,family_halide,0
+849,family_chalcogenide,0
+849,family_pnictide,0
+849,family_perovskite_ABX3,0
+849,family_double_perovskite,1
+849,family_hybrid_perovskite,0
+849,family_intermetallic,0
+849,family_organic,0
+849,family_other,0
+849,HOMO_character_s,0
+849,HOMO_character_p,1
+849,HOMO_character_d,0
+849,HOMO_character_f,0
+849,LUMO_character_s,0
+849,LUMO_character_p,1
+849,LUMO_character_d,0
+849,LUMO_character_f,0
+849,HOMO_element_Z,35
+849,LUMO_element_Z,83

@@ -1,0 +1,53 @@
+{
+  "query": "TiO2",
+  "aliases": [
+    {
+      "alias": "c-TiO2",
+      "formula": "TiO2",
+      "material_class": "inorganic_bulk",
+      "role_hint": "ETL",
+      "note": "compact TiO2 (anatase)"
+    },
+    {
+      "alias": "TiO2-c",
+      "formula": "TiO2",
+      "material_class": "inorganic_bulk",
+      "role_hint": "ETL",
+      "note": "compact TiO2 (anatase)"
+    },
+    {
+      "alias": "mp-TiO2",
+      "formula": "TiO2",
+      "material_class": "inorganic_bulk",
+      "role_hint": "ETL",
+      "note": "mesoporous TiO2 (anatase)"
+    },
+    {
+      "alias": "anatase",
+      "formula": "TiO2",
+      "material_class": "inorganic_bulk",
+      "role_hint": "ETL",
+      "note": null
+    },
+    {
+      "alias": "rutile",
+      "formula": "TiO2",
+      "material_class": "inorganic_bulk",
+      "role_hint": "ETL",
+      "note": null
+    }
+  ],
+  "reduced_formula": "TiO2",
+  "family": "oxide",
+  "anonymized_formula": "AB2",
+  "mulliken_chi_eV": 5.810963668874102,
+  "n_materials_rows": 2,
+  "n_records": 133,
+  "n_structures": 53,
+  "n_composition_features": 179,
+  "butler_ginley_using_best_gap": {
+    "Eg": 3.3,
+    "CBM_vacuum_eV": -4.160963668874102,
+    "VBM_vacuum_eV": -7.4609636688741015
+  }
+}

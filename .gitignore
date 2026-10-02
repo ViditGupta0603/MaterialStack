@@ -1,0 +1,15 @@
+# large generated data
+data/cache/
+data/materials_db.sqlite
+data/materials_db.sqlite-wal
+data/materials_db.sqlite-shm
+models/*.joblib
+reports/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+frontend/node_modules/
+frontend/dist/
