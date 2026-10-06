@@ -1,0 +1,358 @@
+{
+ "generated": "2026-10-06",
+ "model": {
+  "n_features": 157
+ },
+ "metrics": [
+  {
+   "section": "A. Band gap (ML model, grouped 5-fold CV)",
+   "metric": "MAE",
+   "value": 0.397,
+   "unit": "eV",
+   "n": 2509,
+   "baseline": 1.118,
+   "baseline_rule": "predict the mean gap",
+   "note": "semiconductors/insulators with a measured gap; error = |predicted − measured|"
+  },
+  {
+   "section": "A. Band gap (ML model, grouped 5-fold CV)",
+   "metric": "RMSE",
+   "value": 0.584,
+   "unit": "eV",
+   "n": 2509,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": ""
+  },
+  {
+   "section": "A. Band gap (ML model, grouped 5-fold CV)",
+   "metric": "R²",
+   "value": 0.863,
+   "unit": "",
+   "n": 2509,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": ""
+  },
+  {
+   "section": "A. Band gap (ML model, grouped 5-fold CV)",
+   "metric": "Spearman rank correlation",
+   "value": 0.908,
+   "unit": "",
+   "n": 2509,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": ""
+  },
+  {
+   "section": "A. Band gap (ML model, grouped 5-fold CV)",
+   "metric": "Within 0.3 eV",
+   "value": 53.886,
+   "unit": "%",
+   "n": 2509,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": ""
+  },
+  {
+   "section": "A. Band gap (ML model, grouped 5-fold CV)",
+   "metric": "Within 0.5 eV",
+   "value": 73.615,
+   "unit": "%",
+   "n": 2509,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": ""
+  },
+  {
+   "section": "A. Band gap (ML model, grouped 5-fold CV)",
+   "metric": "MAE, materials with a DFT hint",
+   "value": 0.426,
+   "unit": "eV",
+   "n": 1169,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": ""
+  },
+  {
+   "section": "A. Band gap (ML model, grouped 5-fold CV)",
+   "metric": "MAE, formula only (no DFT data)",
+   "value": 0.372,
+   "unit": "eV",
+   "n": 1340,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "what to expect for a new composition"
+  },
+  {
+   "section": "A. Band gap (ML model, grouped 5-fold CV)",
+   "metric": "MAE where a hybrid DFT gap exists",
+   "value": 0.423,
+   "unit": "eV",
+   "n": 981,
+   "baseline": 0.54,
+   "baseline_rule": "use the hybrid DFT gap (HSE06/TBmBJ) directly",
+   "note": ""
+  },
+  {
+   "section": "A. Band gap (ML model, grouped 5-fold CV)",
+   "metric": "MAE where a GGA DFT gap exists",
+   "value": 0.426,
+   "unit": "eV",
+   "n": 1169,
+   "baseline": 0.959,
+   "baseline_rule": "use the GGA DFT gap (PBE/OptB88vdW) directly",
+   "note": ""
+  },
+  {
+   "section": "A. Band gap (ML model, grouped 5-fold CV)",
+   "metric": "MAE on the Borlido benchmark materials",
+   "value": 0.439,
+   "unit": "eV",
+   "n": 445,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "best-curated experimental labels"
+  },
+  {
+   "section": "A. Band gap (ML model, grouped 5-fold CV)",
+   "metric": "MAE for gaps of 1–3.5 eV (solar-cell layers)",
+   "value": 0.357,
+   "unit": "eV",
+   "n": 1592,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": ""
+  },
+  {
+   "section": "B. Band edges (measured VBM hidden)",
+   "metric": "VBM MAE, hybrid-DFT surfaces",
+   "value": 0.522,
+   "unit": "eV",
+   "n": 5,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "what the tool predicts for a material without photoemission data"
+  },
+  {
+   "section": "B. Band edges (measured VBM hidden)",
+   "metric": "VBM bias, hybrid-DFT surfaces",
+   "value": -0.117,
+   "unit": "eV",
+   "n": 5,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "negative = predicted too deep"
+  },
+  {
+   "section": "B. Band edges (measured VBM hidden)",
+   "metric": "VBM MAE, Butler–Ginley estimate",
+   "value": 1.077,
+   "unit": "eV",
+   "n": 35,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "what the tool predicts for a material without photoemission data"
+  },
+  {
+   "section": "B. Band edges (measured VBM hidden)",
+   "metric": "VBM bias, Butler–Ginley estimate",
+   "value": -0.663,
+   "unit": "eV",
+   "n": 35,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "negative = predicted too deep"
+  },
+  {
+   "section": "B. Band edges (measured VBM hidden)",
+   "metric": "Spread between independent measurements of one material",
+   "value": 0.9,
+   "unit": "eV",
+   "n": 3,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "noise floor of the reference data itself (median)"
+  },
+  {
+   "section": "C1. Measured band offsets (21 interfaces, InterMat Table 2)",
+   "metric": "|ΔEv| MAE, tool",
+   "value": 0.448,
+   "unit": "eV",
+   "n": 21,
+   "baseline": 0.839,
+   "baseline_rule": "predict ΔEv = 0",
+   "note": "with measured edges this is partly circular: several of these layers' electron affinities come from InterMat Table 1"
+  },
+  {
+   "section": "C1. Measured band offsets (21 interfaces, InterMat Table 2)",
+   "metric": "|ΔEv| MAE, tool without measured edges",
+   "value": 0.589,
+   "unit": "eV",
+   "n": 21,
+   "baseline": 0.839,
+   "baseline_rule": "predict ΔEv = 0",
+   "note": "Butler–Ginley / hybrid-DFT surfaces only"
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "Coverage, tool",
+   "value": 100.0,
+   "unit": "%",
+   "n": 102,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "junctions with a prediction"
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "Type accuracy, tool",
+   "value": 60.784,
+   "unit": "%",
+   "n": 102,
+   "baseline": 60.784,
+   "baseline_rule": "always predict Type II",
+   "note": ""
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "Type accuracy on clear junctions (both offsets ≥ 0.2 eV), tool",
+   "value": 45.455,
+   "unit": "%",
+   "n": 22,
+   "baseline": 72.727,
+   "baseline_rule": "always predict Type II",
+   "note": "near-zero offsets make the type hinge on a few tenths of an eV"
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "Type accuracy when confident (≥ 80 %), tool",
+   "value": 81.818,
+   "unit": "%",
+   "n": 11,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "junctions not flagged 'check with DFT'"
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "ΔEc MAE, tool",
+   "value": 0.51,
+   "unit": "eV",
+   "n": 102,
+   "baseline": 0.447,
+   "baseline_rule": "predict ΔEc = 0",
+   "note": ""
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "ΔEc sign agreement (|gold| ≥ 0.1 eV), tool",
+   "value": 80.0,
+   "unit": "%",
+   "n": 65,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "spike vs cliff: decides whether carriers are extracted or blocked"
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "ΔEv MAE, tool",
+   "value": 0.577,
+   "unit": "eV",
+   "n": 102,
+   "baseline": 0.804,
+   "baseline_rule": "predict ΔEv = 0",
+   "note": ""
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "ΔEv sign agreement (|gold| ≥ 0.1 eV), tool",
+   "value": 82.5,
+   "unit": "%",
+   "n": 80,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "spike vs cliff: decides whether carriers are extracted or blocked"
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "Coverage, tool without measured edges",
+   "value": 91.176,
+   "unit": "%",
+   "n": 102,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "junctions with a prediction"
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "Type accuracy, tool without measured edges",
+   "value": 61.29,
+   "unit": "%",
+   "n": 93,
+   "baseline": 62.366,
+   "baseline_rule": "always predict Type II",
+   "note": ""
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "Type accuracy on clear junctions (both offsets ≥ 0.2 eV), tool without measured edges",
+   "value": 45.455,
+   "unit": "%",
+   "n": 22,
+   "baseline": 72.727,
+   "baseline_rule": "always predict Type II",
+   "note": "near-zero offsets make the type hinge on a few tenths of an eV"
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "Type accuracy when confident (≥ 80 %), tool without measured edges",
+   "value": null,
+   "unit": "%",
+   "n": 0,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "junctions not flagged 'check with DFT'"
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "ΔEc MAE, tool without measured edges",
+   "value": 0.801,
+   "unit": "eV",
+   "n": 93,
+   "baseline": 0.474,
+   "baseline_rule": "predict ΔEc = 0",
+   "note": ""
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "ΔEc sign agreement (|gold| ≥ 0.1 eV), tool without measured edges",
+   "value": 56.452,
+   "unit": "%",
+   "n": 62,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "spike vs cliff: decides whether carriers are extracted or blocked"
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "ΔEv MAE, tool without measured edges",
+   "value": 0.705,
+   "unit": "eV",
+   "n": 93,
+   "baseline": 0.852,
+   "baseline_rule": "predict ΔEv = 0",
+   "note": ""
+  },
+  {
+   "section": "C2. Gold-standard device stacks",
+   "metric": "ΔEv sign agreement (|gold| ≥ 0.1 eV), tool without measured edges",
+   "value": 64.865,
+   "unit": "%",
+   "n": 74,
+   "baseline": null,
+   "baseline_rule": "",
+   "note": "spike vs cliff: decides whether carriers are extracted or blocked"
+  }
+ ]
+}

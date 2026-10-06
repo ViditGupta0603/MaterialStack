@@ -1,0 +1,3 @@
+film,substrate,formula_film,formula_substrate,vbo_substrate_minus_film,cbo_substrate_minus_film,method,reference
+CdS,CuInSe2,CdS,CuInSe2,0.8,0.0,UPS/XPS/IPES interface experiment,"Morkel, Weinhardt, Lohmüller, Heske et al., Appl. Phys. Lett. 79, 4482 (2001), doi:10.1063/1.1428408, abstract (CdS/CuInSe2: VBO 0.8±0.2 eV, flat CBO 0.0±0.2 eV; CuInSe2 VBM above CdS)"
+ZnO,CdS,ZnO,CdS,1.4,,XPS/UPS interface experiments,"Klein et al., Materials 3, 4892 (2010), doi:10.3390/ma3114892, Sec. 2.5 (CdS/ZnO valence-band offset 1.4 eV chosen from the group's photoemission interface studies; CdS VBM above ZnO)"

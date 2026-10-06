@@ -43,6 +43,15 @@ Net: about 5–6k unique experimental gaps, mostly from one compilation.
 | `jarvis_interfacedb` | 593 (425 with numeric offset) | Directly computed interface (ASJ) valence-band offsets. Paper: MAE 0.22 eV vs experiment (vacuum-alignment rule: 0.45 eV). Convention: positive ΔEv at A/B means VBM higher in B. | **High**, but **unused** by the pipeline. Best available end-to-end validation set. |
 | `literature_csv` | 0 | User-supplied experimental edges | **Empty**: no experimental edge data in the DB. |
 
+### Curated measured levels and offsets (literature_csv, literature_offsets)
+- `data/literature/measured_band_edges.csv` (48 rows): Tao 2019 perovskites (UPS/IPES), InterMat Table 1
+  electron affinities, and (2026-10-05) PCBM, C60, Spiro-OMeTAD, MoO3, TiO2, ZnO, SnO2, In2O3, NiOx, CuI,
+  CuSCN, SnS, CuSbS2, Cs2SnI6 from photoemission papers (citation, table/figure in each row).
+- `data/literature/offsets/measured_band_offsets.csv`: measured interface offsets (CdS/CuInSe2,
+  CdS/ZnO); used before DFT interfaces.
+- Caveat: oxide ionization energies vary by up to 1 eV with surface termination and preparation; both
+  ends of the measured range are stored and the median is used.
+
 ### Not loaded
 
 - `materials_project` (live API; needs key): PBE/r2SCAN gaps, no vacuum-referenced edges. Low added value.
@@ -52,7 +61,7 @@ Net: about 5–6k unique experimental gaps, mostly from one compilation.
 
 | Source | What it gives | Why it matters | Access | Status |
 |---|---|---|---|---|
-| **Kiyohara, Hinuma & Oba, JACS 2024** | IP + EA for 2,195 binary + 718 ternary **oxide surfaces** (about 127 + 344 oxides), dielectric-dependent hybrid functional; also formula, space group, Miller index, surface energy, bulk gap | Best computed edge training data for oxides (most ETLs/HTLs); hybrid-level, surface-resolved. Replace Castelli with this. | Supporting-information Excel/ZIP on the ACS page (ACS website, may need browser download) | idea |
+| **Kiyohara, Hinuma & Oba, JACS 2024** | IP + EA for 2,195 binary + 718 ternary **oxide surfaces** (about 127 + 344 oxides), dielectric-dependent hybrid functional; also formula, space group, Miller index, surface energy, bulk gap | Best computed edge training data for oxides (most ETLs/HTLs); hybrid-level, surface-resolved. Replace Castelli with this. | Obtained via Europe PMC supplementary-files API (ACS blocks scripts) | **in use** (CHANGELOG #20) |
 | **Experimental IP/EA (UPS/IPES) curated by us** | Measured VBM/CBM vs vacuum for device layers | The only way to get *trusted* edge lookups and an honest test set. Even 150–300 values beats all current edge data. | Manual curation into `data/literature/*.csv` (loader already exists) | idea |
 | **Xu & Schoonen 2000** | CB/VB positions of about 50 oxide + 50 sulfide minerals | Classic table, easy to digitise. **Caveat:** many entries are themselves electronegativity estimates; keep only measured ones. | Paper (Am. Mineral.) | idea |
 | **JARVIS surfacedb / interfacedb (fixed)** | Correct IP/EA per surface; 425 DFT band offsets | Fix vacuum alignment; use interfaces as junction-type test set | Already downloaded via `jarvis-tools` | idea |

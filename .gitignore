@@ -1,10 +1,7 @@
-# large generated data
-data/cache/
-data/materials_db.sqlite
-data/materials_db.sqlite-wal
-data/materials_db.sqlite-shm
+# downloaded source files (rebuilt by build_data.py)
+data/raw/
+# trained model (rebuilt by train.py)
 models/*.joblib
-reports/
 
 # python
 __pycache__/

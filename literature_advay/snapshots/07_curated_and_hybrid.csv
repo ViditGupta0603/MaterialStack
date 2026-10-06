@@ -1,0 +1,38 @@
+kind,name,gap,vbm,cbm,gap_src,edge_src,type,cbo,vbo,uncertain,offset_src
+layer,Si,1.17,-5.22,-4.05,"lookup:experiment:borlido_expt,foundry_ml_exp_bandgaps,literature_csv",lookup:literature:literature_csv,,,,,
+layer,GaAs,1.52,-5.59,-4.07,"lookup:experiment:borlido_expt,expt_gap,foundry_ml_exp_bandgaps,literature_csv",lookup:literature:literature_csv,,,,,
+layer,CdTe,1.48,-5.84011590437072,-4.360115904370719,"lookup:experiment:borlido_expt,expt_gap,foundry_ml_exp_bandgaps","blend: 0.3 × surface VBM (DFT-surface-OptB88vdW, jarvis_surfacedb) + 0.7 × Butler–Ginley",,,,,
+layer,CdS,2.48,-7.004221290024677,-4.524221290024677,"lookup:experiment:borlido_expt,expt_gap,foundry_ml_exp_bandgaps","blend: 0.3 × surface VBM (DFT-surface-OptB88vdW, jarvis_surfacedb) + 0.7 × Butler–Ginley",,,,,
+layer,ZnO,3.44,-7.57703557060691,-4.13703557060691,"lookup:experiment:borlido_expt,expt_gap,foundry_ml_exp_bandgaps","blend: 0.8 × surface VBM (DFT-surface-hybrid, kiyohara_oxides) + 0.2 × Butler–Ginley",,,,,
+layer,ZnS,3.8150000000000004,-6.976068190056582,-3.1610681900565814,"lookup:experiment:borlido_expt,expt_gap,foundry_ml_exp_bandgaps","blend: 0.3 × surface VBM (DFT-surface-OptB88vdW, jarvis_surfacedb) + 0.7 × Butler–Ginley",,,,,
+layer,GaN,3.5,-6.8,-3.3,"lookup:experiment:borlido_expt,expt_gap,literature_csv",lookup:literature:literature_csv,,,,,
+layer,TiO2,3.165,-7.764220484255125,-4.599220484255125,"lookup:experiment:borlido_expt,expt_gap,expt_gap_kingsbury,foundry_ml_exp_bandgaps","blend: 0.8 × surface VBM (DFT-surface-hybrid, kiyohara_oxides) + 0.2 × Butler–Ginley",,,,,
+layer,SnO2,3.6,-8.950043262228226,-5.350043262228226,"lookup:experiment:borlido_expt,expt_gap,expt_gap_kingsbury,foundry_ml_exp_bandgaps","blend: 0.8 × surface VBM (DFT-surface-hybrid, kiyohara_oxides) + 0.2 × Butler–Ginley",,,,,
+layer,NiO,4.0,-7.75873319000472,-3.75873319000472,"lookup:experiment:expt_gap,expt_gap_kingsbury",Butler–Ginley (−χ − Eg/2),,,,,
+layer,Cu2O,2.17,-5.107896031118881,-2.937896031118881,"lookup:experiment:borlido_expt,expt_gap,expt_gap_kingsbury,foundry_ml_exp_bandgaps","blend: 0.8 × surface VBM (DFT-surface-hybrid, kiyohara_oxides) + 0.2 × Butler–Ginley",,,,,
+layer,CuI,3.12,-6.4414484806086625,-3.3214484806086624,"lookup:experiment:borlido_expt,expt_gap,foundry_ml_exp_bandgaps","blend: 0.3 × surface VBM (DFT-surface-OptB88vdW, jarvis_surfacedb) + 0.7 × Butler–Ginley",,,,,
+layer,MoO3,3.68,-8.95216482696302,-5.272164826963021,lookup:experiment:expt_gap,"blend: 0.8 × surface VBM (DFT-surface-hybrid, kiyohara_oxides) + 0.2 × Butler–Ginley",,,,,
+layer,WO3,2.8,-8.800814187893392,-6.0008141878933925,"lookup:experiment:expt_gap,foundry_ml_exp_bandgaps","blend: 0.8 × surface VBM (DFT-surface-hybrid, kiyohara_oxides) + 0.2 × Butler–Ginley",,,,,
+layer,In2O3,2.8,-7.821339972397942,-5.021339972397942,"lookup:experiment:expt_gap,expt_gap_kingsbury,foundry_ml_exp_bandgaps","blend: 0.8 × surface VBM (DFT-surface-hybrid, kiyohara_oxides) + 0.2 × Butler–Ginley",,,,,
+layer,Ga2O3,4.470000000000001,-8.936443489615158,-4.466443489615157,lookup:experiment:expt_gap,"blend: 0.8 × surface VBM (DFT-surface-hybrid, kiyohara_oxides) + 0.2 × Butler–Ginley",,,,,
+layer,MAPbI3,1.59,-5.93,-4.36,lookup:literature:literature_csv,lookup:literature:literature_csv,,,,,
+layer,FAPbI3,1.51,-6.24,-4.74,lookup:literature:literature_csv,lookup:literature:literature_csv,,,,,
+layer,CsPbI3,1.72,-6.25,-4.47,"lookup:experiment:foundry_ml_exp_bandgaps,literature_csv",lookup:literature:literature_csv,,,,,
+layer,CsPbBr3,2.315,-6.53,-4.17,"lookup:experiment:borlido_expt,foundry_ml_exp_bandgaps,literature_csv",lookup:literature:literature_csv,,,,,
+layer,Cs2AgBiBr6,2.19,-6.368134171475507,-4.178134171475508,"lookup:experiment:borlido_expt,expt_gap,expt_gap_kingsbury,foundry_ml_exp_bandgaps",Butler–Ginley (−χ − Eg/2),,,,,
+layer,CsSnI3,1.28,-5.69,-4.38,"lookup:experiment:borlido_expt,foundry_ml_exp_bandgaps,literature_csv",lookup:literature:literature_csv,,,,,
+layer,CuInSe2,1.04,-5.198352972741124,-4.158352972741124,"lookup:experiment:borlido_expt,expt_gap,foundry_ml_exp_bandgaps",Butler–Ginley (−χ − Eg/2),,,,,
+layer,Cu2ZnSnS4,1.51,-5.981723269215062,-4.471723269215063,lookup:experiment:borlido_expt,Butler–Ginley (−χ − Eg/2),,,,,
+layer,Sb2Se3,1.11,-5.992726324079818,-4.882726324079818,"lookup:experiment:borlido_expt,expt_gap,foundry_ml_exp_bandgaps",Butler–Ginley (−χ − Eg/2),,,,,
+layer,MoS2,1.23,-5.946903870882775,-4.716903870882774,lookup:experiment:borlido_expt,Butler–Ginley (−χ − Eg/2),,,,,
+layer,V2O5,2.3499999999999996,-8.529799529108171,-6.1797995291081715,lookup:experiment:expt_gap,"blend: 0.8 × surface VBM (DFT-surface-hybrid, kiyohara_oxides) + 0.2 × Butler–Ginley",,,,,
+junction,Si|GaAs,,,,,,I,0.09946475746548877,0.2505352425345113,True,"interface DFT (JARVIS, 2 calculation(s))"
+junction,TiO2|MAPbI3,,,,,,II,0.2592204842551249,-1.834220484255125,True,vacuum alignment of the two layers
+junction,MAPbI3|NiO,,,,,,I,0.5812668099952798,1.8287331900047201,True,vacuum alignment of the two layers
+junction,SnO2|MAPbI3,,,,,,II,1.0100432622282258,-3.020043262228226,True,vacuum alignment of the two layers
+junction,CdS|CdTe,,,,,,II,0.16410538565395782,-1.1641053856539578,True,vacuum alignment of the two layers
+junction,ZnO|Cu2O,,,,,,II,1.1991395394880286,-2.4691395394880287,True,vacuum alignment of the two layers
+junction,TiO2|CsPbBr3,,,,,,II,0.38422048425512445,-1.2342204842551245,True,vacuum alignment of the two layers
+junction,CdS|CuInSe2,,,,,,II,0.3658683172835535,-1.8058683172835535,True,vacuum alignment of the two layers
+junction,ZnO|CdTe,,,,,,I,-0.22308033376380987,-1.73691966623619,True,vacuum alignment of the two layers
+junction,GaN|ZnO,,,,,,II,-0.45909606609763287,0.3990960660976328,False,"interface DFT (JARVIS, 3 calculation(s))"

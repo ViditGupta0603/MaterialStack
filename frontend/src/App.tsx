@@ -1,48 +1,61 @@
-import { motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { fetchMetrics, fetchStats, predictStack } from "./api";
-import type {
-  GapMetrics,
-  MetricsResponse,
-  PolymorphPolicy,
-  PredictResponse,
-  StatsResponse,
-} from "./api";
+import { fetchMetrics, predictStack } from "./api";
+import type { JunctionResult, LayerResult, Metric, MetricsResponse, PredictResponse } from "./api";
 import "./App.css";
 
-const ease = [0.22, 1, 0.36, 1] as const;
+const EXAMPLES: { label: string; stack: string[] }[] = [
+  { label: "Perovskite n-i-p", stack: ["TiO2", "MAPbI3", "Spiro-OMeTAD"] },
+  { label: "Perovskite p-i-n", stack: ["PCBM", "MAPbI3", "NiO"] },
+  { label: "CdS / CdTe", stack: ["CdS", "CdTe"] },
+  { label: "CIS cell", stack: ["ZnO", "CdS", "CuInSe2"] },
+  { label: "Si / GaAs", stack: ["Si", "GaAs"] },
+];
 
-function fmt(n: number | null | undefined, digits = 3) {
+function fmt(n: number | null | undefined, digits = 2) {
   if (n == null || Number.isNaN(n)) return "—";
   return n.toFixed(digits);
 }
 
+function pct(x: number | null | undefined) {
+  return x == null ? "—" : `${Math.round(x * 100)}%`;
+}
+
+// ---------------------------------------------------------------- provenance in plain language
+
+const EDGE_LABEL: Record<LayerResult["edge_kind"], string> = {
+  measured: "Measured (photoemission)",
+  surface: "Hybrid-DFT surfaces + electronegativity",
+  estimate: "Electronegativity estimate (Butler–Ginley)",
+  none: "Not available",
+};
+
+function gapTag(L: LayerResult): { text: string; tone: "ok" | "warn" | "muted" } {
+  if (L.gap_kind === "measured") return { text: "Measured", tone: "ok" };
+  if (L.gap_kind === "ML") return { text: "ML estimate", tone: "muted" };
+  if (L.gap_kind === "metal") return { text: "Metal", tone: "muted" };
+  return { text: "Not available", tone: "warn" };
+}
+
+// ---------------------------------------------------------------- app
+
 export default function App() {
   const [metrics, setMetrics] = useState<MetricsResponse | null>(null);
-  const [stats, setStats] = useState<StatsResponse | null>(null);
-  const [input, setInput] = useState("TiO2\nMAPbI3");
+  const [input, setInput] = useState("TiO2\nMAPbI3\nSpiro-OMeTAD");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PredictResponse | null>(null);
-  const [polymorph, setPolymorph] = useState<PolymorphPolicy>("ground_state");
 
   useEffect(() => {
     fetchMetrics().then(setMetrics).catch(() => setMetrics(null));
-    fetchStats().then(setStats).catch(() => setStats(null));
   }, []);
 
-  async function onPredict(e: FormEvent) {
-    e.preventDefault();
-    const materials = input
-      .split(/[\n,]+/)
-      .map((s) => s.trim())
-      .filter(Boolean);
+  async function run(materials: string[]) {
     if (!materials.length) return;
     setBusy(true);
     setError(null);
     try {
-      setResult(await predictStack(materials, polymorph));
+      setResult(await predictStack(materials));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -50,576 +63,364 @@ export default function App() {
     }
   }
 
-  const familyBars = useMemo(() => {
-    if (!stats?.by_family?.length) return [];
-    const max = Math.max(...stats.by_family.map((f) => f.n_materials));
-    return stats.by_family.map((f) => ({
-      ...f,
-      pct: (100 * f.n_materials) / max,
-    }));
-  }, [stats]);
+  function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    run(input.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean));
+  }
 
   return (
     <div className="page">
       <header className="nav">
-        <a className="nav-brand" href="#top">
-          MaterialStack
-        </a>
+        <div className="nav-title">
+          <span className="nav-brand">MaterialStack</span>
+          <span className="nav-tag">Band-alignment screening for device stacks</span>
+        </div>
         <nav className="nav-links">
-          <a href="#lab">Lab</a>
-          <a href="#report">Performance</a>
-          <a href="#pipeline">Pipeline</a>
+          <a href="#predict">Predict</a>
+          <a href="#validation">Validation</a>
+          <a href="#method">Method</a>
         </nav>
       </header>
 
-      <section className="hero" id="top">
-        <div className="hero-copy">
-          <motion.p
-            className="brand"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease }}
-          >
-            MaterialStack
-          </motion.p>
-          <motion.h1
-            initial={{ opacity: 0, y: 22 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.75, delay: 0.08, ease }}
-          >
-            Band edges for layered stacks.
-          </motion.h1>
-          <motion.p
-            className="lede"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.16, ease }}
-          >
-            Lookup trusted gaps first. Predict the rest. Classify junctions from
-            physics — not a black-box label.
-          </motion.p>
-          <motion.div
-            className="hero-cta"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, delay: 0.24, ease }}
-          >
-            <a className="btn primary" href="#lab">
-              Open the lab
-            </a>
-            <a className="btn ghost" href="#report">
-              View training report
-            </a>
-          </motion.div>
-        </div>
-        <motion.div
-          className="hero-visual"
-          aria-hidden
-          initial={{ opacity: 0, scale: 1.04 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.1, ease }}
-        >
-          <BandStackArt />
-        </motion.div>
-      </section>
-
-      <section className="section lab" id="lab">
-        <div className="section-head">
-          <p className="eyebrow">Lab</p>
-          <h2>Resolve a layer or a stack</h2>
-          <p>
-            Enter one formula per line. MaterialStack prefers experiment / HSE
-            from the database, then Magpie + LightGBM.
-          </p>
-        </div>
-        <form className="lab-form" onSubmit={onPredict}>
+      <section className="section" id="predict">
+        <form className="input-panel" onSubmit={onSubmit}>
+          <label className="field-label" htmlFor="stack">
+            Layers, top first — one formula or common name per line
+          </label>
           <textarea
+            id="stack"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            rows={5}
-            placeholder={"TiO2\nMAPbI3\nNiO"}
+            rows={4}
+            placeholder={"TiO2\nMAPbI3\nSpiro-OMeTAD"}
             spellCheck={false}
           />
-          <div className="lab-actions">
-            <button className="btn primary" type="submit" disabled={busy}>
-              {busy ? "Resolving…" : "Predict stack"}
-            </button>
-            <div className="seg" role="radiogroup" aria-label="Polymorph policy">
-              <span className="seg-label">Polymorph</span>
-              {(
-                [
-                  ["ground_state", "Ground state"],
-                  ["mean", "Mean of polymorphs"],
-                ] as const
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  role="radio"
-                  aria-checked={polymorph === value}
-                  className={polymorph === value ? "seg-btn active" : "seg-btn"}
-                  onClick={() => setPolymorph(value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            {error && <p className="error">{error}</p>}
+          <div className="examples">
+            <span className="muted">Examples:</span>
+            {EXAMPLES.map((ex) => (
+              <button
+                key={ex.label}
+                type="button"
+                className="chip"
+                onClick={() => {
+                  setInput(ex.stack.join("\n"));
+                  run(ex.stack);
+                }}
+              >
+                {ex.label}
+              </button>
+            ))}
           </div>
+          <div className="actions">
+            <button className="btn primary" type="submit" disabled={busy}>
+              {busy ? "Predicting…" : "Predict alignment"}
+            </button>
+          </div>
+          {error && <p className="error">{error}</p>}
         </form>
 
-        {result && (
-          <motion.div
-            className="results"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease }}
-          >
-            <div className="layer-grid">
-              {result.layers.map((L, i) => (
-                <motion.article
-                  key={`${L.query}-${i}`}
-                  className="layer"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.06 * i, duration: 0.45, ease }}
-                >
-                  <header>
-                    <h3>{L.formula ?? L.query}</h3>
-                    <span className={L.trusted_gap ? "tag ok" : "tag warn"}>
-                      {L.trusted_gap ? "trusted gap" : "ML / weak"}
-                    </span>
-                  </header>
-                  <dl>
-                    <div>
-                      <dt>Eg</dt>
-                      <dd>{fmt(L.gap_ev)} eV</dd>
-                    </div>
-                    <div>
-                      <dt>CBM</dt>
-                      <dd>{fmt(L.cbm_ev)} eV</dd>
-                    </div>
-                    <div>
-                      <dt>VBM</dt>
-                      <dd>{fmt(L.vbm_ev)} eV</dd>
-                    </div>
-                  </dl>
-                  <p className="source">{L.gap_source}</p>
-                  <p className="source muted">{L.edge_source}</p>
-                  {L.structures_used.length > 0 && (
-                    <ul className="chips">
-                      {L.structures_used.map((s) => (
-                        <li key={s.structure_id}>
-                          SG {s.space_group ?? "?"} · {fmt(s.gap_ev, 2)} eV
-                          {s.e_rel != null && ` · ΔE ${fmt(s.e_rel, 3)} eV/atom`}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {L.notes?.map((n) => (
-                    <p className="note" key={n}>
-                      {n}
-                    </p>
-                  ))}
-                </motion.article>
-              ))}
-            </div>
-            {result.junctions.length > 0 && (
-              <div className="junctions">
-                <h3>Junctions</h3>
-                {result.junctions.map((j) => (
-                  <div className="junction" key={j.interface}>
-                    <div>
-                      <strong>{j.interface}</strong>
-                      <span className={j.uncertain ? "tag warn" : "tag ok"}>
-                        Type {j.type ?? "?"}
-                        {j.uncertain ? " · uncertain" : ""}
-                      </span>
-                    </div>
-                    <p>
-                      CBO {fmt(j.cbo_ev)} eV · VBO {fmt(j.vbo_ev)} eV ·{" "}
-                      {j.reason}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </motion.div>
-        )}
+        {result && <Results result={result} />}
       </section>
 
-      <section className="section report" id="report">
-        <div className="section-head">
-          <p className="eyebrow">Performance</p>
-          <h2>Full training report</h2>
-          <p>
-            Frozen LightGBM models on cleaned experiment / literature labels.
-            GroupKFold by element set. Models unchanged for this UI release.
-          </p>
-        </div>
-
-        {!metrics ? (
-          <p className="muted">Loading metrics…</p>
-        ) : (
-          <>
-            <div className="stat-row">
-              <div className="stat">
-                <span>Eg MAE (non-metal)</span>
-                <strong>{fmt(metrics.eg.mae_nonmetal)} eV</strong>
-              </div>
-              <div className="stat">
-                <span>Eg R²</span>
-                <strong>{fmt(metrics.eg.r2_nonmetal)}</strong>
-              </div>
-              <div className="stat">
-                <span>Metal accuracy</span>
-                <strong>{fmt(metrics.eg.metal_accuracy * 100, 1)}%</strong>
-              </div>
-              <div className="stat">
-                <span>Edge CBM MAE</span>
-                <strong>{fmt(metrics.edge.cbm_mae)} eV</strong>
-              </div>
-            </div>
-
-            <div className="report-grid">
-              <article className="panel">
-                <h3>Model A — band gap</h3>
-                <ul className="kv">
-                  <li>
-                    <span>Backend</span>
-                    <b>{metrics.primary_backend}</b>
-                  </li>
-                  <li>
-                    <span>Train methods</span>
-                    <b>{metrics.eg_train_methods.join(", ")}</b>
-                  </li>
-                  <li>
-                    <span>Train materials</span>
-                    <b>
-                      {metrics.eg.n_train} ({metrics.eg.n_metals} metal /{" "}
-                      {metrics.eg.n_nonmetals} non-metal)
-                    </b>
-                  </li>
-                  <li>
-                    <span>RMSE / R²</span>
-                    <b>
-                      {fmt(metrics.eg.rmse_nonmetal)} eV ·{" "}
-                      {fmt(metrics.eg.r2_nonmetal)}
-                    </b>
-                  </li>
-                  <li>
-                    <span>XGB baseline MAE</span>
-                    <b>{fmt(metrics.eg_xgb_baseline.mae_nonmetal)} eV</b>
-                  </li>
-                  <li>
-                    <span>CV folds</span>
-                    <b>GroupKFold × {metrics.eg.n_splits}</b>
-                  </li>
-                  <li>
-                    <span>Train wall</span>
-                    <b>{metrics.seconds}s</b>
-                  </li>
-                </ul>
-                {metrics.borlido_holdout && (
-                  <p className="callout">
-                    Borlido-only holdout (n={metrics.borlido_holdout.n}): MAE{" "}
-                    {fmt(metrics.borlido_holdout.mae_nonmetal)} eV — OOD stress
-                    test, never used in fit.
-                  </p>
-                )}
-              </article>
-
-              <article className="panel">
-                <h3>Model B — vacuum edges</h3>
-                <ul className="kv">
-                  <li>
-                    <span>δCBM / CBM / VBM MAE</span>
-                    <b>
-                      {fmt(metrics.edge.delta_mae)} / {fmt(metrics.edge.cbm_mae)}{" "}
-                      / {fmt(metrics.edge.vbm_mae)} eV
-                    </b>
-                  </li>
-                  <li>
-                    <span>Train materials</span>
-                    <b>{metrics.edge.n_train}</b>
-                  </li>
-                  <li>
-                    <span>XGB edge CBM MAE</span>
-                    <b>{fmt(metrics.edge_xgb_baseline.cbm_mae)} eV</b>
-                  </li>
-                </ul>
-                {metrics.edge.sources && (
-                  <ul className="chips">
-                    {Object.entries(metrics.edge.sources).map(([k, v]) => (
-                      <li key={k}>
-                        {k}: {v}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <p className="formula">
-                  CBM<sub>BG</sub> = −(χ − E<sub>g</sub>/2) · δCBM = CBM −
-                  CBM<sub>BG</sub> · VBM = CBM − E<sub>g</sub>
-                </p>
-              </article>
-            </div>
-
-            {metrics.structure_hybrid && (
-              <StructurePanel h={metrics.structure_hybrid} />
-            )}
-
-            {metrics.clean_audit && (
-              <article className="panel wide">
-                <h3>Label cleaning audit</h3>
-                <p className="muted">
-                  Eg {metrics.clean_audit.n_eg_before} →{" "}
-                  {metrics.clean_audit.n_eg_after} · edges{" "}
-                  {metrics.clean_audit.n_edge_before} →{" "}
-                  {metrics.clean_audit.n_edge_after} (SQLite unchanged)
-                </p>
-                <div className="table-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Rule</th>
-                        <th>Dropped</th>
-                        <th>Detail</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {metrics.clean_audit.rules
-                        .filter((r) => r.n_dropped > 0)
-                        .map((r) => (
-                          <tr key={r.rule}>
-                            <td>{r.rule}</td>
-                            <td>{r.n_dropped}</td>
-                            <td>{r.detail}</td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-              </article>
-            )}
-
-            <div className="report-grid">
-              <article className="panel">
-                <h3>Top Eg features</h3>
-                <ol className="feat-list">
-                  {metrics.eg.top_features.map((f) => (
-                    <li key={f.feature}>
-                      <span>{f.feature.replace("MagpieData ", "")}</span>
-                      <b>{Math.round(f.importance)}</b>
-                    </li>
-                  ))}
-                </ol>
-              </article>
-              <article className="panel">
-                <h3>Top edge features</h3>
-                <ol className="feat-list">
-                  {metrics.edge.top_features.map((f) => (
-                    <li key={f.feature}>
-                      <span>{f.feature.replace("MagpieData ", "")}</span>
-                      <b>{Math.round(f.importance)}</b>
-                    </li>
-                  ))}
-                </ol>
-              </article>
-            </div>
-
-            <p className="decision">{metrics.decision}</p>
-          </>
-        )}
+      <section className="section" id="validation">
+        <h2>Validation</h2>
+        <p className="lede">
+          Scored on data the model never trained on. Run <code>python validate.py</code> to reproduce;
+          the full table is in <code>results/metrics.csv</code>.
+        </p>
+        {metrics ? <Validation m={metrics} /> : <p className="muted">Metrics not available: run validate.py.</p>}
       </section>
 
-      <section className="section pipeline" id="pipeline">
-        <div className="section-head">
-          <p className="eyebrow">Pipeline</p>
-          <h2>From catalog to junction</h2>
-        </div>
-        <ol className="steps">
+      <section className="section" id="method">
+        <h2>Method</h2>
+        <ol className="method">
           <li>
-            <strong>Database</strong>
-            <span>
-              {stats
-                ? `${stats.materials.toLocaleString()} materials · ${stats.records.toLocaleString()} records`
-                : "104k+ materials"}
-            </span>
+            <b>Band gap.</b> A measured value when one exists (Borlido 2019, curated literature, else the
+            consensus of the Zhuo 2018 compilation). Otherwise one LightGBM model predicts it from the
+            formula, using a DFT gap (JARVIS, SNUMAT) as an extra hint when the formula has one.
           </li>
           <li>
-            <strong>Clean labels</strong>
-            <span>Experiment-first · scatter / DFT conflict filters</span>
+            <b>Band edges.</b> Measured ionization energy / electron affinity (photoemission papers) when
+            available. Otherwise hybrid-DFT surface calculations for oxides (Kiyohara 2024), else the
+            electronegativity estimate VBM = −χ − E<sub>g</sub>/2. CBM = VBM + E<sub>g</sub>.
           </li>
           <li>
-            <strong>LightGBM</strong>
-            <span>Metal classifier + log1p Eg · δCBM edge correction</span>
-          </li>
-          <li>
-            <strong>Lookup-first</strong>
-            <span>Trusted DB before ML · Type I/II/III from offsets</span>
+            <b>Junctions.</b> A measured interface offset where one exists, otherwise both layers aligned to
+            the vacuum level. Type I/II/III follows from the four band edges; its probability comes from the
+            validated error of each input. Below 80% the tool asks for a DFT check.
           </li>
         </ol>
-        {familyBars.length > 0 && (
-          <div className="family">
-            <h3>Catalog by family</h3>
-            <ul>
-              {familyBars.map((f) => (
-                <li key={f.family}>
-                  <span>{f.family}</span>
-                  <div className="bar">
-                    <i style={{ width: `${f.pct}%` }} />
-                  </div>
-                  <b>{f.n_materials.toLocaleString()}</b>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </section>
 
       <footer className="footer">
-        <strong>MaterialStack</strong>
-        <span>Models frozen for this build</span>
+        <span>MaterialStack</span>
+        <span className="muted">Data: Zhuo 2018, Borlido 2019, JARVIS-DFT, SNUMAT, Kiyohara 2024, photoemission literature</span>
       </footer>
     </div>
   );
 }
 
-function pct(n: number | null | undefined) {
-  return n == null ? "—" : `${fmt(n * 100, 1)}%`;
-}
+// ---------------------------------------------------------------- results
 
-function StructurePanel({ h }: { h: NonNullable<MetricsResponse["structure_hybrid"]> }) {
-  const sys: [string, GapMetrics][] = [
-    ["Composition only (previous)", h.system_composition_only],
-    ["Structure-aware (deployed)", h.system_structure_aware],
-  ];
+function Results({ result }: { result: PredictResponse }) {
+  const layers = result.layers;
   return (
-    <article className="panel wide">
-      <h3>Structure-aware band gap model</h3>
-      <p className="muted">
-        Bulk crystal structure for {h.n_with_structure} training materials ({pct(h.coverage)}),
-        stored DFT gap for {h.n_with_dft} ({pct(h.coverage_dft)}) ·{" "}
-        {h.n_features.composition} composition + {h.n_features.structure} structure +{" "}
-        {h.n_features.dft_proxy} DFT-proxy + {h.n_features.stored_dft} stored-DFT features ·
-        default polymorph: {h.recommended_policy.replace("_", " ")}
-      </p>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Ablation · identical folds</th>
-              <th>MAE (non-metal)</th>
-              <th>R²</th>
-              <th>Metal acc.</th>
-              <th>MAE · with structure</th>
-            </tr>
-          </thead>
-          <tbody>
-            {h.ablation.map((r) => (
-              <tr key={r.label}>
-                <td>{r.label}</td>
-                <td>{fmt(r.all.mae_nonmetal)} eV</td>
-                <td>{fmt(r.all.r2_nonmetal)}</td>
-                <td>{pct(r.all.metal_accuracy)}</td>
-                <td>{fmt(r.with_structure.mae_nonmetal)} eV</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="results">
+      <div className="results-grid">
+        <div className="panel">
+          <h3>Layers</h3>
+          <div className="table-wrap">
+            <table className="layers">
+              <thead>
+                <tr>
+                  <th>Layer</th>
+                  <th className="num">
+                    E<sub>g</sub> (eV)
+                  </th>
+                  <th className="num">VBM (eV)</th>
+                  <th className="num">CBM (eV)</th>
+                  <th>Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                {layers.map((L, i) => {
+                  const tag = gapTag(L);
+                  return (
+                    <tr key={`${L.query}-${i}`}>
+                      <td>
+                        <div className="layer-name">{L.query}</div>
+                        {L.display_formula && L.display_formula !== L.query && (
+                          <div className="muted small">{L.display_formula}</div>
+                        )}
+                      </td>
+                      <td className="num">{fmt(L.gap_ev)}</td>
+                      <td className="num">{fmt(L.vbm_ev)}</td>
+                      <td className="num">{fmt(L.cbm_ev)}</td>
+                      <td>
+                        <span className={`badge ${tag.tone}`}>{tag.text}</span>
+                        <div className="small" title={L.gap_source}>
+                          Gap: {L.gap_source || "not available"}
+                        </div>
+                        <div className="small" title={L.edge_source}>
+                          Edges: {EDGE_LABEL[L.edge_kind]}
+                        </div>
+                        {L.notes.map((n) => (
+                          <div className="small note" key={n}>
+                            {n}
+                          </div>
+                        ))}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="panel">
+          <h3>Energy levels vs vacuum</h3>
+          <BandDiagram layers={layers} />
+          <div className="legend small">
+            <span className="key cbm-key" /> CBM
+            <span className="key vbm-key" /> VBM
+            <span className="muted">· shaded: band gap</span>
+          </div>
+        </div>
       </div>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>System as deployed</th>
-              <th>MAE (non-metal)</th>
-              <th>R²</th>
-              <th>≤ 0.5 eV</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sys.map(([label, m]) => (
-              <tr key={label}>
-                <td>{label}</td>
-                <td>{fmt(m.mae_nonmetal)} eV</td>
-                <td>{fmt(m.r2_nonmetal)}</td>
-                <td>{pct(m.within_0p5_all)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {h.borlido_holdout && (
-        <p className="callout">
-          Borlido holdout (never trained on): MAE{" "}
-          {fmt(h.borlido_holdout.structure_aware.mae_nonmetal)} eV structure-aware vs{" "}
-          {fmt(h.borlido_holdout.composition_only.mae_nonmetal)} eV composition-only.
-        </p>
+
+      {result.junctions.length > 0 && (
+        <div className="panel">
+          <h3>Junctions</h3>
+          {result.junctions.map((j, i) => (
+            <JunctionRow key={j.interface} j={j} top={layers[i]} bottom={layers[i + 1]} />
+          ))}
+        </div>
       )}
-    </article>
+    </div>
   );
 }
 
-function BandStackArt() {
+/** Where carriers go across one interface, in words. */
+function carrierFlow(j: JunctionResult, top: LayerResult, bottom: LayerResult): string | null {
+  if (j.type == null || j.cbo_ev == null || j.vbo_ev == null) return null;
+  if (j.type === "III") return "Broken gap: the bands do not overlap (tunnelling / recombination junction).";
+  // cbo = CBM(bottom) − CBM(top): > 0 → electrons settle in the top layer.
+  const electrons = j.cbo_ev > 0 ? top.query : bottom.query;
+  // vbo = VBM(top) − VBM(bottom): > 0 → holes settle in the top layer.
+  const holes = j.vbo_ev > 0 ? top.query : bottom.query;
+  return electrons === holes
+    ? `Both electrons and holes collect in ${electrons} (carriers confined).`
+    : `Electrons collect in ${electrons}, holes in ${holes} (charge separation).`;
+}
+
+function JunctionRow({ j, top, bottom }: { j: JunctionResult; top: LayerResult; bottom: LayerResult }) {
+  const probs = j.type_probabilities;
+  const flow = carrierFlow(j, top, bottom);
   return (
-    <svg className="band-art" viewBox="0 0 720 560" role="img">
-      <defs>
-        <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#c5d5de" />
-          <stop offset="55%" stopColor="#9eb8c4" />
-          <stop offset="100%" stopColor="#6f9399" />
-        </linearGradient>
-        <linearGradient id="layerA" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1c6b66" stopOpacity="0.92" />
-          <stop offset="100%" stopColor="#0f4542" stopOpacity="0.95" />
-        </linearGradient>
-        <linearGradient id="layerB" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#2a7f79" stopOpacity="0.85" />
-          <stop offset="100%" stopColor="#1a5551" stopOpacity="0.9" />
-        </linearGradient>
-        <linearGradient id="layerC" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#c46a3a" stopOpacity="0.88" />
-          <stop offset="100%" stopColor="#8f4726" stopOpacity="0.92" />
-        </linearGradient>
-      </defs>
-      <rect width="720" height="560" fill="url(#sky)" />
-      <motion.g
-        initial={{ y: 24, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 1, delay: 0.2, ease }}
-      >
-        <path d="M40 420 L680 360 L680 500 L40 500 Z" fill="url(#layerA)" />
-        <path d="M70 300 L650 250 L650 360 L70 390 Z" fill="url(#layerB)" />
-        <path d="M110 190 L610 150 L610 250 L110 285 Z" fill="url(#layerC)" />
-        <motion.path
-          d="M130 210 C250 180 400 200 590 165"
-          fill="none"
-          stroke="#f3f6f8"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 1.4, delay: 0.55, ease }}
-        />
-        <motion.path
-          d="M90 330 C220 300 420 320 630 275"
-          fill="none"
-          stroke="#f3f6f8"
-          strokeWidth="2"
-          strokeOpacity="0.75"
-          strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 1.4, delay: 0.75, ease }}
-        />
-        <text x="130" y="175" fill="#f3f6f8" fontFamily="Syne, sans-serif" fontSize="18" fontWeight="700">
-          CBM
-        </text>
-        <text x="90" y="445" fill="#f3f6f8" fontFamily="Syne, sans-serif" fontSize="18" fontWeight="700">
-          VBM
-        </text>
-      </motion.g>
+    <div className="junction">
+      <div className="junction-head">
+        <strong>
+          {top.query} / {bottom.query}
+        </strong>
+        {j.type ? (
+          <span className={`badge ${j.uncertain ? "warn" : "ok"}`}>
+            Type {j.type} · {pct(j.confidence)}
+            {j.uncertain ? " · check with DFT" : ""}
+          </span>
+        ) : (
+          <span className="badge muted">{j.reason}</span>
+        )}
+      </div>
+      {j.type && (
+        <>
+          <div className="junction-values">
+            <span>
+              ΔE<sub>v</sub> {fmt(j.vbo_ev)} ± {fmt(j.vbo_sigma_ev)} eV
+            </span>
+            <span>
+              ΔE<sub>c</sub> {fmt(j.cbo_ev)} eV
+            </span>
+            <span className="muted">Offset: {j.offset_source}</span>
+          </div>
+          {flow && <p className="small">{flow}</p>}
+          {probs && (
+            <div className="prob-bar" aria-label="Junction type probabilities">
+              {(["I", "II", "III"] as const).map((k) =>
+                probs[k] > 0.005 ? (
+                  <span key={k} className={`prob-${k}`} style={{ width: `${probs[k] * 100}%` }}>
+                    {probs[k] > 0.12 ? `Type ${k} ${Math.round(probs[k] * 100)}%` : ""}
+                  </span>
+                ) : null,
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+/** Each layer as a box from VBM to CBM on a common vacuum scale. */
+function BandDiagram({ layers }: { layers: LayerResult[] }) {
+  const ok = layers.filter((L) => L.vbm_ev != null && L.cbm_ev != null);
+  if (!ok.length) return <p className="muted">No band edges to draw.</p>;
+  const W = 520;
+  const H = 300;
+  const pad = { l: 44, r: 10, t: 22, b: 36 };
+  const hi = Math.max(...ok.map((L) => L.cbm_ev as number)) + 0.5;
+  const lo = Math.min(...ok.map((L) => L.vbm_ev as number)) - 0.5;
+  const y = (e: number) => pad.t + ((hi - e) / (hi - lo)) * (H - pad.t - pad.b);
+  const colW = (W - pad.l - pad.r) / layers.length;
+  const ticks: number[] = [];
+  for (let e = Math.ceil(lo); e <= Math.floor(hi); e += 1) ticks.push(e);
+  return (
+    <svg className="band-diagram" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Band alignment diagram">
+      {ticks.map((e) => (
+        <g key={e}>
+          <line x1={pad.l} x2={W - pad.r} y1={y(e)} y2={y(e)} className="grid" />
+          <text x={pad.l - 6} y={y(e) + 4} className="axis" textAnchor="end">
+            {e}
+          </text>
+        </g>
+      ))}
+      <text x={4} y={12} className="axis">
+        eV
+      </text>
+      {layers.map((L, i) => {
+        if (L.vbm_ev == null || L.cbm_ev == null) return null;
+        const x = pad.l + i * colW + colW * 0.15;
+        const w = colW * 0.7;
+        const yc = y(L.cbm_ev);
+        const yv = y(L.vbm_ev);
+        return (
+          <g key={`${L.query}-${i}`}>
+            <rect x={x} y={yc} width={w} height={yv - yc} className="gap-box" />
+            <line x1={x} x2={x + w} y1={yc} y2={yc} className="cbm" />
+            <line x1={x} x2={x + w} y1={yv} y2={yv} className="vbm" />
+            <text x={x + w / 2} y={yc - 5} className="level" textAnchor="middle">
+              {fmt(L.cbm_ev)}
+            </text>
+            <text x={x + w / 2} y={yv + 14} className="level" textAnchor="middle">
+              {fmt(L.vbm_ev)}
+            </text>
+            <text x={x + w / 2} y={H - 12} className="label" textAnchor="middle">
+              {L.query}
+            </text>
+          </g>
+        );
+      })}
     </svg>
+  );
+}
+
+// ---------------------------------------------------------------- validation
+
+function find(m: Metric[], name: string): Metric | undefined {
+  return m.find((x) => x.metric === name);
+}
+
+function show(x: Metric | undefined) {
+  if (!x || x.value == null) return "—";
+  return x.unit === "%" ? `${Math.round(x.value)}%` : `${fmt(x.value)}${x.unit ? ` ${x.unit}` : ""}`;
+}
+
+function Validation({ m }: { m: MetricsResponse }) {
+  const rows = m.metrics;
+  const sections = [...new Set(rows.map((r) => r.section))];
+  const gap = find(rows, "MAE");
+  const offsets = find(rows, "|ΔEv| MAE, tool");
+  const sign = find(rows, "ΔEc sign agreement (|gold| ≥ 0.1 eV), tool");
+  const confident = find(rows, "Type accuracy when confident (≥ 80 %), tool");
+  return (
+    <>
+      <div className="stat-row">
+        <Stat label="Band-gap error, unseen chemistry" value={show(gap)} note={`${gap?.n ?? "—"} materials, 5-fold CV`} />
+        <Stat label="Band-offset error vs experiment" value={show(offsets)} note={`${offsets?.n ?? "—"} measured interfaces`} />
+        <Stat label="Spike vs cliff right (ΔEc sign)" value={show(sign)} note={`${sign?.n ?? "—"} gold device junctions`} />
+        <Stat label="Confident junction calls correct" value={show(confident)} note={`${confident?.n ?? "—"} calls with ≥ 80%`} />
+      </div>
+      <details className="details">
+        <summary>All metrics</summary>
+        {sections.map((sec) => (
+          <div className="panel" key={sec}>
+            <h3>{sec}</h3>
+            <div className="table-wrap">
+              <table className="kv">
+                <thead>
+                  <tr>
+                    <th>Metric</th>
+                    <th className="num">Value</th>
+                    <th className="num">Baseline</th>
+                    <th className="num">n</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows
+                    .filter((r) => r.section === sec)
+                    .map((r) => (
+                      <tr key={r.metric} title={[r.note, r.baseline_rule && `baseline: ${r.baseline_rule}`].filter(Boolean).join(" · ")}>
+                        <td>{r.metric}</td>
+                        <td className="num">{show(r)}</td>
+                        <td className="num">{r.baseline == null ? "" : show({ ...r, value: r.baseline })}</td>
+                        <td className="num">{r.n ?? ""}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </details>
+    </>
+  );
+}
+
+function Stat({ label, value, note }: { label: string; value: string; note: string }) {
+  return (
+    <div className="stat">
+      <span className="stat-label">{label}</span>
+      <strong>{value}</strong>
+      <span className="muted small">{note}</span>
+    </div>
   );
 }
