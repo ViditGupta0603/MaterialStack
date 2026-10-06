@@ -9,15 +9,18 @@ we have measured along the way.
 | [reading_guide.md](reading_guide.md) | What to read and which concepts to know before working on the project, in order |
 | [datasets.md](datasets.md) | Every data source: what we ingest today (with a measured credibility check) and candidate sources to add, with status |
 | [papers.md](papers.md) | Papers worth knowing, with the takeaway that matters for this project |
+| [demo_stacks.md](demo_stacks.md) | Stacks to demo the tool, with the outputs it currently gives |
+| [plan.md](plan.md) | Phased plan to reach an accurate, usable alignment screener, with benchmarks and done-criteria |
+| [critique.md](critique.md) | Numbered list of everything wrong with the project, severity and fix status |
 | [findings.md](findings.md) | Dated log of analyses, bugs and numbers found in our own pipeline |
 | [references.bib](references.bib) | BibTeX for everything cited here (for the BTP report) |
-| [scripts/](scripts/) | Analysis scripts behind the numbers in `findings.md` |
+| [scripts/](scripts/) | Helper scripts: open-access paper search for measured levels, headless UI check |
 
 ## Conventions
 
 - **Add, don't overwrite.** New findings go at the top of `findings.md` with a date; if a later
   result supersedes an earlier one, mark the old entry *superseded* rather than deleting it.
-- **Every number needs a source**: a script in `scripts/`, a paper, or a dataset version.
+- **Every number needs a source**: `validate.py` output, a script, a paper, or a dataset version.
 - **Credibility labels** used in `datasets.md`:
   - **High**: measured data or high-level theory, independently checked against experiment.
   - **Medium**: useful but with a known bias, coverage gap, or limited cross-checking.
@@ -27,10 +30,11 @@ we have measured along the way.
 
 ## Running the scripts
 
-From the repo root, after `build-db` and `train`:
+The analysis scripts behind findings F1–F21 worked on the old SQLite database and were removed in the
+2026-10-06 simplification (CHANGELOG #26); their results stay in `findings.md`. Current numbers come from
+`python validate.py` in the repo root (`results/metrics.csv`). Remaining scripts:
 
 ```bash
-PYTHONPATH=. .venv/bin/python literature_advay/scripts/source_credibility.py   # source cross-checks (F8, F9)
-PYTHONPATH=. .venv/bin/python literature_advay/scripts/edge_analysis.py        # edge-model error breakdown (F2-F6)
-PYTHONPATH=. .venv/bin/python literature_advay/scripts/surface_vacuum_check.py # surface vacuum alignment + interfaces (F1, F7)
+.venv/bin/python literature_advay/scripts/find_measured_levels.py "NiO" "NiOx ionization energy UPS"   # search open-access papers for measured IE/EA
+.venv/bin/python literature_advay/scripts/ui_screenshots.py "TiO2\nMAPbI3"   # headless UI check (server on :8001)
 ```

@@ -6,11 +6,16 @@
   --mineral: #1c6b66;
   --mineral-deep: #0f4542;
   --copper: #c46a3a;
-  --line: rgba(20, 32, 43, 0.12);
+  --line: rgba(20, 32, 43, 0.1);
+  --line-strong: rgba(20, 32, 43, 0.2);
+  --surface: #ffffff;
+  --accent: #1c6b66;
+  --accent-deep: #0f4542;
+  --ok-bg: rgba(28, 107, 102, 0.1);
+  --warn-bg: rgba(166, 107, 43, 0.12);
   --ok: #1c6b66;
   --warn: #a66b2b;
   --bad: #9b3d3d;
-  --font-display: "Syne", sans-serif;
   --font-body: "Manrope", sans-serif;
   color: var(--ink);
   background: var(--paper);
@@ -34,10 +39,7 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(1200px 600px at 80% -10%, rgba(28, 107, 102, 0.14), transparent 60%),
-    radial-gradient(900px 500px at -10% 30%, rgba(196, 106, 58, 0.08), transparent 55%),
-    linear-gradient(180deg, #e7eef3 0%, var(--paper) 38%, #eef3f6 100%);
+  background: var(--paper);
 }
 
 #root {

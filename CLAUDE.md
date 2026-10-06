@@ -4,39 +4,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-MaterialStack predicts band gap (Eg) and vacuum band edges (CBM/VBM) for each layer of a solar/optoelectronic stack, then derives heterojunction type (I/II/III) from the band offsets. Python package `materialstack` (pipeline + FastAPI) plus a React/Vite frontend in `frontend/`. `README.md` has the full source table and schema; `MaterialStack_EVALUATION.md` is a presentation/evaluation guide (partly in Hinglish). `literature_advay/` holds the data-source credibility audit, candidate datasets, paper notes and a dated findings log; keep it updated when you learn something about the data or model accuracy.
+MaterialStack screens band alignment of device stacks: per layer the band gap (Eg) and band edges vs vacuum (VBM/CBM), per interface the band offsets and junction type (I/II/III) with a confidence. It is a B.Tech project, so simplicity matters: a few CSV files, **one** model, three scripts. `README.md` is the overview; `MaterialStack_EVALUATION.md` is the presentation/viva guide (partly Hinglish). `literature_advay/` holds the source-credibility audit, paper notes and a dated findings log; keep it updated when you learn something about the data or accuracy. The user only wants peer-reviewed sources for data.
 
 ## Commands
 
-A virtualenv lives in `.venv/` (`pip install -r requirements.txt`). Everything goes through the CLI (`materialstack/cli.py`):
+A virtualenv lives in `.venv/` (`pip install -r requirements.txt`).
 
 ```bash
-python -m materialstack build-db                     # download sources -> data/materials_db.sqlite (~1-2 GB)
-python -m materialstack build-db --only jarvis_surfacedb literature_csv   # re-ingest selected sources
-python -m materialstack stats | lookup TiO2
-python -m materialstack featurize --n-jobs 4         # composition features -> features_composition
-python -m materialstack featurize-structures --n-jobs 7
-python -m materialstack train-proxies                # DFT-gap proxy models (needs featurize-structures)
-python -m materialstack train [--no-xgb-baseline] [--no-structure]
-python -m materialstack predict TiO2 MAPbI3          # stack -> junctions
-python -m materialstack serve [--reload]             # API + built UI on :8000
+python build_data.py      # data/raw (downloads if missing) -> data/band_gaps.csv, band_gaps_rejected.csv, dft_gaps.csv, band_edges.csv
+python train.py           # -> models/gap_model.joblib
+python validate.py        # -> results/metrics.csv, metrics.json, gap_cv_predictions.csv, junction_details.csv
+python -m materialstack predict TiO2 MAPbI3 Spiro-OMeTAD
+python -m materialstack serve [--port 8000] [--reload]
+.venv/bin/python -m pytest -q   # tests/; two tests need the built data and model
 ```
 
-Frontend (`frontend/`): `npm run dev` (Vite on :5173, proxies `/api` to :8000), `npm run build` (`tsc -b && vite build` -> `frontend/dist`, served by FastAPI), `npm run lint` (oxlint).
-
-There is no test suite. Verify changes by running `predict`/`lookup` against the DB, or by checking CV metrics written to `models/metrics.json` after `train`.
-
-The SQLite DB, `data/cache/`, and `models/*.joblib` are gitignored generated artifacts; most commands require `build-db` (and for prediction, `train`) to have been run first. `MATERIALSTACK_ROOT` env var overrides the root for data/models paths (`config.py`).
+Frontend (`frontend/`): `npm run dev` (Vite on :5173, proxies `/api` to :8000), `npm run build` (served by `serve`), `npm run lint`. Headless UI check: `literature_advay/scripts/ui_screenshots.py` (server on :8001). Log every pipeline change in `CHANGELOG.md`; report validation numbers from `results/metrics.csv`.
 
 ## Architecture
 
-Pipeline stages, each persisting to `data/materials_db.sqlite` or `models/`:
+- **Data** (CSV only, no database). Hand-curated, cited: `data/curated/measured_band_edges.csv`, `measured_band_offsets.csv`, `aliases.csv` (the only data files edited by hand). Built by `build_data.py`: `band_gaps.csv` (one measured gap per material: Zhuo 2018 + Borlido 2019 + curated; Borlido/curated preferred, else consensus), `band_gaps_rejected.csv` (rules R1–R6 with reasons), `dft_gaps.csv` (median GGA and hybrid gap per formula from JARVIS + SNUMAT, JARVIS polymorphs within 50 meV/atom of the lowest only), `band_edges.csv` (one row per material and basis: `measured` or `hybrid-DFT surfaces` from Kiyohara 2024). Formula key everywhere = pymatgen reduced formula (`chem.formula_key`); organics use `organic:<name>`.
+- **Model** (`materialstack/model.py`): one LightGBM regressor on log(1+Eg), semiconductors only, features = matminer Magpie composition set + Mulliken χ + n_elements + `dft_gap_gga`/`dft_gap_hybrid` (NaN when unknown, no imputation). `train.py` fits it on everything; `validate.py` scores it with `GroupKFold(5)` by element set.
+- **Prediction** (`materialstack/predict.py`): alias → formula; Eg measured → metal (only metallic elements) → ML; VBM measured → 0.8·hybrid surface + 0.2·Butler–Ginley → Butler–Ginley (−χ − Eg/2); CBM measured or VBM + Eg; organics measured only. Junction: measured interface offset (with its CBO) → vacuum alignment; type from the four edges (`junction_type`), confidence by Monte Carlo with σ constants (`SIGMA_GAP`, `SIGMA_VBM`) taken from `validate.py` results. `use_measured_edges=False` hides curated edges/offsets (used by validation as a hold-out).
+- **Sign conventions:** vbo = VBM(top) − VBM(bottom); cbo = CBM(bottom) − CBM(top). Offsets file stores substrate − film.
+- **Serving** (`api.py`): `/api/health`, `/api/metrics` (results/metrics.json), `POST /api/predict`; serves `frontend/dist`. UI is in `frontend/src/App.tsx`, types in `api.ts`.
 
-1. **Ingest** (`build_db.py`, `sources/`): each loader in `sources/__init__.py:LOADERS` is a generator yielding `("record" | "interface" | "alias", dict)` tuples; `db.Writer` normalizes formulas (`chem.py`), creates `materials`/`structures`/`records` rows, and logs to `build_log`. Re-ingesting a source deletes its prior rows first. To add a source: write a loader, register it in `LOADERS`, and add its key to `DEFAULT_SOURCES`/`HEAVY_SOURCES` in `config.py`.
-2. **Trust ranking**: `config.METHOD_RANK` (experiment/literature=1 … PBE=6, ml_prediction=9) drives the `materials_best` SQL view in `db.py`, which picks the best-ranked gap and edges per material. New method tags must be added there.
-3. **Features** (`features.py`: Magpie/matminer composition; `structure.py`: cell-choice-invariant structure descriptors `sf_*` + DFT-proxy models) are cached in `features_composition`, `features_structure`, `structure_proxy` tables.
-4. **Training** (`models.py`, `clean.py`): `TwoStageGapModel` (LightGBM metal classifier + Eg regressor) and `EdgeCorrectionModel` (predicts δCBM over the Butler–Ginley electronegativity estimate; VBM = CBM − Eg). CV is always `GroupKFold` grouped by element set to avoid leakage across substitutions. `clean.py` filters only the training frames (never the DB) and writes `models/train_clean_audit.json`. Borlido materials are held out of Eg training and scored separately. A structure-aware model is trained alongside the composition-only one; missing structure/DFT features stay NaN for LightGBM to route.
-5. **Prediction** (`predict.py`): lookup-first. `resolve_layer` resolves alias -> formula -> `materials_best`; uses DB Eg if its rank ≤ `max_lookup_rank` (default 2), otherwise ML (structure-aware model if the DB has a structure/DFT gaps, else composition-only on-the-fly Magpie features). Polymorph policy `ground_state` vs `mean`. `classify_junction` is deterministic from CBO/VBO (not ML) and flags UNCERTAIN near ~0.3 eV boundaries or when ML edges are involved.
-6. **Serving** (`api.py`): FastAPI endpoints `/api/health`, `/api/stats`, `/api/metrics` (reads `models/metrics.json`), `POST /api/predict`; serves `frontend/dist` as an SPA when built. Frontend API client is `frontend/src/api.ts`; UI is essentially all in `App.tsx`.
-
-Project constraints (from README/evaluation doc): LightGBM is the primary model (XGBoost only as a baseline); `automatminer` is intentionally not used; junction type must remain physics-derived, not learned.
+Constraints: LightGBM only (no second model, no XGBoost/automatminer); junction type stays physics-derived, never learned; CV always grouped by element set.

@@ -1,406 +1,237 @@
-"""Lookup-first layer property resolution for MaterialStack.
+"""Prediction: from layer names to band edges and junction types.
 
-Prefer method-ranked DB values (experiment / literature / HSE06 by default).
-Fall back to Magpie + LightGBM only when the DB has no trusted label.
-Junction type is computed deterministically from band edges (not learned).
+For each layer
+  1. name → formula     data/curated/aliases.csv (MAPbI3 → CH3NH3PbI3, Spiro-OMeTAD → organic), else the name itself
+  2. band gap Eg        measured (data/band_gaps.csv)  →  else the ML model (model.py)
+  3. VBM                measured (data/band_edges.csv)
+                        →  hybrid-DFT surfaces: VBM = 0.8 × surface VBM + 0.2 × Butler–Ginley
+                        →  Butler–Ginley estimate: VBM = −χ − Eg/2
+     CBM                measured if given, else VBM + Eg
+For each pair of neighbouring layers (top = earlier in the list)
+  4. valence-band offset  measured interface offset (data/curated/measured_band_offsets.csv)
+                          →  else vacuum alignment (Anderson's rule): VBM(top) − VBM(bottom)
+  5. type I / II / III    from the four band edges: a physics definition, not learned
+  6. confidence           Monte Carlo: vary every input by its typical error (SIGMA below), count the types
+
+Organic layers (Spiro-OMeTAD, PCBM, C60 …) have no inorganic formula: they use measured values only.
 """
 from __future__ import annotations
 
-import logging
-from dataclasses import asdict, dataclass
-from pathlib import Path
+import math
+from dataclasses import asdict, dataclass, field
+from functools import lru_cache
 from typing import Any
 
+import numpy as np
 import pandas as pd
+from pymatgen.core import Element
 
-from materialstack.chem import butler_ginley_edges, clean_material_name, mulliken_chi, try_composition
-from materialstack.config import DB_PATH, METHOD_RANK, MODELS_DIR
-from materialstack.db import connect, lookup, resolve_alias
-from materialstack.features import feature_row, featurize_formula
-from materialstack.models import EG_MODEL_PATH, EDGE_MODEL_PATH, load_edge_model, load_eg_model, predict_edges, predict_eg
+from materialstack import model
+from materialstack.chem import butler_ginley_vbm, elements, formula_key, mulliken_chi, to_float
+from materialstack.config import ALIASES, BAND_EDGES, BAND_GAPS, MEASURED_OFFSETS
 
-log = logging.getLogger("materialstack.predict")
+SURFACE_WEIGHT = 0.8        # weight of the hybrid-DFT surface VBM against Butler–Ginley (chosen on benchmarks)
+METAL_GAP = 0.001           # eV; a layer with a smaller gap is a metal (contact), not part of a junction
 
-# Use DB gap if best method rank is <= this (1=experiment/literature, 2=HSE06).
-DEFAULT_MAX_LOOKUP_RANK = 2
-JUNCTION_BOUNDARY_EV = 0.3
+# Typical error (σ, eV) of each kind of input, from validate.py (results/metrics.csv); σ ≈ MAE / 0.8.
+SIGMA_GAP = {"measured": 0.2,            # scatter between independent compilations of the same material
+             "ML": 0.5}                  # cross-validated MAE of the model 0.40 eV
+SIGMA_VBM = {"measured": 0.25,           # photoemission values of one material differ by ~0.2–0.3 eV
+             "surface": 0.65,            # hybrid-DFT surfaces vs measured VBM: MAE 0.52 eV (5 materials)
+             "estimate": 1.3}            # Butler–Ginley vs measured VBM: MAE 1.08 eV (35 materials)
+SIGMA_MEASURED_OFFSET = 0.2              # photoemission interface offsets are quoted ±0.1–0.2 eV
+CONFIDENT = 0.8                          # below this probability a junction is flagged "check with DFT"
+N_SAMPLES = 4000
 
 
 @dataclass
-class LayerResult:
-    query: str
-    formula: str | None
-    material_id: int | None
-    gap_ev: float | None
-    cbm_ev: float | None
-    vbm_ev: float | None
-    gap_source: str  # lookup:<method>:<source> | model | butler_ginley | missing
-    edge_source: str
-    gap_method: str | None = None
-    edge_method: str | None = None
-    p_metal: float | None = None
-    chi: float | None = None
-    trusted_gap: bool = False
-    trusted_edges: bool = False
-    notes: list[str] | None = None
-    polymorph_policy: str | None = None
-    structures_used: list[dict[str, Any]] | None = None
+class Layer:
+    query: str                       # what the user typed
+    formula: str | None              # key used in the data files (reduced formula or organic:<name>)
+    display_formula: str | None      # formula as a chemist writes it (alias target)
+    gap_ev: float | None = None
+    gap_kind: str = "none"           # measured | ML | metal | none
+    gap_source: str = ""
+    vbm_ev: float | None = None
+    cbm_ev: float | None = None
+    edge_kind: str = "none"          # measured | surface | estimate | none
+    edge_source: str = ""
+    notes: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
-        d = asdict(self)
-        d["notes"] = self.notes or []
-        d["structures_used"] = self.structures_used or []
-        return d
+        return asdict(self)
 
 
-def method_rank(method: str | None) -> int:
-    if not method:
-        return 99
-    return int(METHOD_RANK.get(method, 8))
+# --------------------------------------------------------------------------- data, loaded once
+
+@lru_cache(maxsize=1)
+def _tables() -> dict[str, Any]:
+    aliases = pd.read_csv(ALIASES)
+    edges = pd.read_csv(BAND_EDGES)
+    offsets = pd.read_csv(MEASURED_OFFSETS)
+    offsets["film"] = offsets.formula_film.map(formula_key)
+    offsets["substrate"] = offsets.formula_substrate.map(formula_key)
+    return {
+        "aliases": dict(zip(aliases.alias.str.lower(), aliases.formula)),
+        "gaps": pd.read_csv(BAND_GAPS).set_index("formula"),
+        "measured_edges": edges[edges.basis == "measured"].set_index("formula"),
+        "surface_edges": edges[edges.basis == "hybrid-DFT surfaces"].set_index("formula"),
+        "offsets": offsets,
+    }
 
 
-def _pick_best_row(best: pd.DataFrame) -> pd.Series | None:
-    if best.empty:
-        return None
-    df = best.copy()
-    df["_rank"] = df["best_gap_method"].map(method_rank)
-    df = df.sort_values(["_rank", "n_records"], ascending=[True, False], na_position="last")
-    return df.iloc[0]
+# --------------------------------------------------------------------------- one layer
 
+def resolve_layer(name: str, use_measured_edges: bool = True) -> Layer:
+    """Band gap and band edges of one layer. ``use_measured_edges=False`` ignores the curated photoemission
+    data (used by validate.py to test what the tool predicts for a material without measurements)."""
+    t = _tables()
+    target = t["aliases"].get(name.strip().lower(), name.strip())
+    if target.startswith("organic:"):
+        return _organic_layer(name, target, use_measured_edges)
+    formula = formula_key(target)
+    layer = Layer(query=name, formula=formula, display_formula=target)
+    if formula is None:
+        layer.notes.append("not a chemical formula and not a known layer name (add it to data/curated/aliases.csv)")
+        return layer
 
-def _load_models(models_dir: Path = MODELS_DIR):
-    eg_path = Path(models_dir) / "eg_model.joblib"
-    edge_path = Path(models_dir) / "edge_model.joblib"
-    eg = load_eg_model(eg_path) if eg_path.exists() else None
-    edge = load_edge_model(edge_path) if edge_path.exists() else None
-    return eg, edge
-
-
-def _load_structure_models(models_dir: Path = MODELS_DIR):
-    import joblib
-
-    from materialstack.structure import load_proxy_bundles
-
-    path = Path(models_dir) / "eg_structure_model.joblib"
-    if not path.exists():
-        return None, {}
-    return joblib.load(path), load_proxy_bundles(models_dir)
-
-
-def _predict_eg_structure_aware(con, material_id: int | None, feats: pd.Series, policy: str,
-                                struct_bundle, proxy_bundles) -> tuple[float, float, list[dict[str, Any]], str] | None:
-    """Structure-aware Eg. Returns (gap, p_metal, structures_used, mode) or None → composition model.
-
-    mode is 'structure' (DB crystal structure(s)), 'dft_only' (stored DFT gaps, no structure) or
-    'composition_fields' (nothing known; hybrid model chosen as fallback at training time).
-    """
-    import math
-
-    from materialstack.structure import material_dft_features, structure_rows
-
-    rows = structure_rows(con, material_id, policy, proxy_bundles, feats) if material_id is not None else []
-    if not rows:
-        dft = material_dft_features(con, material_id) if material_id is not None else {}
-        has_dft = any(not math.isnan(v) for v in dft.values())
-        if not has_dft and struct_bundle.get("fallback_without_structure", "composition") != "hybrid":
-            return None
-        full = pd.concat([feats, pd.Series(dft, dtype=float)])
-        full = full[~full.index.duplicated(keep="last")]
-        pred = predict_eg(struct_bundle, full)
-        return float(pred["gap_ev"]), float(pred["p_metal"]), [], "dft_only" if has_dft else "composition_fields"
-    used = []
-    for s in rows:
-        full = pd.concat([feats, pd.Series(s["features"], dtype=float)])
-        full = full[~full.index.duplicated(keep="last")]
-        pred = predict_eg(struct_bundle, full)
-        used.append({k: s[k] for k in ("structure_id", "source", "space_group", "e_rel")} |
-                    {"gap_ev": float(pred["gap_ev"]), "p_metal": float(pred["p_metal"])})
-    gap = float(sum(u["gap_ev"] for u in used) / len(used))
-    p_metal = float(sum(u["p_metal"] for u in used) / len(used))
-    return gap, p_metal, used, "structure"
-
-
-def _features_for_material(con, material_id: int | None, formula: str,
-                           family: str | None = None) -> pd.Series | None:
-    if material_id is not None:
-        row = feature_row(con, int(material_id))
-        if row is not None:
-            return row
-    try:
-        return featurize_formula(formula, family=family)
-    except Exception as exc:
-        log.warning("featurize failed for %s: %s", formula, exc)
-        return None
-
-
-def resolve_layer(
-    name: str,
-    *,
-    db_path: Path = DB_PATH,
-    models_dir: Path = MODELS_DIR,
-    max_lookup_rank: int = DEFAULT_MAX_LOOKUP_RANK,
-    con=None,
-    eg_bundle=None,
-    edge_bundle=None,
-    polymorph: str | None = None,
-    struct_bundle=None,
-    proxy_bundles=None,
-) -> LayerResult:
-    """Resolve Eg / CBM / VBM for one layer: DB lookup first, then ML.
-
-    The ML band gap uses the structure-aware model when the DB holds a bulk crystal structure
-    for the material (``polymorph`` = ground_state | mean; None → trained recommendation),
-    otherwise the composition-only model.
-    """
-    own_con = con is None
-    if own_con:
-        con = connect(db_path)
-    notes: list[str] = []
-
-    alias = resolve_alias(con, name)
-    query = name
-    if alias:
-        notes.append(f"alias '{name}' → {alias.get('formula') or alias.get('note')}")
-        if not alias.get("formula"):
-            if own_con:
-                con.close()
-            return LayerResult(
-                query=query, formula=None, material_id=None,
-                gap_ev=None, cbm_ev=None, vbm_ev=None,
-                gap_source="missing", edge_source="missing",
-                notes=notes + ["organic/alias without formula — add literature CSV"],
-            )
-        name = alias["formula"]
-
-    cn = clean_material_name(name)
-    formula = cn.formula_clean
-    if not formula:
-        if own_con:
-            con.close()
-        return LayerResult(
-            query=query, formula=None, material_id=None,
-            gap_ev=None, cbm_ev=None, vbm_ev=None,
-            gap_source="missing", edge_source="missing",
-            notes=notes + ["formula could not be parsed"],
-        )
-
-    hit = lookup(con, formula)
-    best = _pick_best_row(hit["best"])
-    material_id = int(best.material_id) if best is not None else None
-    family = None
-    chi = None
-    if not hit["materials"].empty:
-        m0 = hit["materials"].iloc[0]
-        family = m0.get("family")
-        chi = m0.get("mulliken_chi")
-        if material_id is None:
-            material_id = int(m0.material_id)
-
-    if chi is None:
-        comp = try_composition(formula)
-        if comp is not None:
-            chi = mulliken_chi(comp)
-
-    gap_ev = None
-    gap_source = "missing"
-    gap_method = None
-    trusted_gap = False
-
-    if best is not None and pd.notna(best.get("best_gap")):
-        rank = method_rank(best.get("best_gap_method"))
-        if rank <= max_lookup_rank:
-            gap_ev = float(best.best_gap)
-            gap_method = str(best.best_gap_method)
-            gap_source = f"lookup:{gap_method}:{best.best_gap_source}"
-            trusted_gap = True
-        else:
-            notes.append(
-                f"DB has gap={best.best_gap:.3f} eV via {best.best_gap_method} "
-                f"(rank {rank} > max_lookup_rank {max_lookup_rank}); using ML fallback"
-            )
-
-    cbm_ev = vbm_ev = None
-    edge_source = "missing"
-    edge_method = None
-    trusted_edges = False
-
-    if best is not None and pd.notna(best.get("best_cbm")) and pd.notna(best.get("best_vbm")):
-        erank = method_rank(best.get("best_edge_method"))
-        # Accept any vacuum edge in DB for edges (scarce); still prefer low rank.
-        cbm_ev = float(best.best_cbm)
-        vbm_ev = float(best.best_vbm)
-        edge_method = str(best.best_edge_method) if pd.notna(best.get("best_edge_method")) else None
-        edge_source = f"lookup:{edge_method}:{best.best_edge_source}"
-        trusted_edges = erank <= max(max_lookup_rank, 4)  # GLLB-SC edges (Castelli) ok
-        if gap_ev is None and trusted_edges:
-            # Derive gap from edges if no trusted gap yet.
-            gap_ev = abs(cbm_ev - vbm_ev)
-            gap_source = f"derived_from_edges:{edge_source}"
-            notes.append("Eg derived from looked-up CBM−VBM")
-
-    p_metal = None
-    policy_used = None
-    structures_used = None
-    need_ml_gap = gap_ev is None
-    need_ml_edges = cbm_ev is None or vbm_ev is None
-
-    if need_ml_gap or need_ml_edges:
-        if eg_bundle is None or edge_bundle is None:
-            eg_bundle, edge_bundle = _load_models(models_dir)
-        feats = _features_for_material(con, material_id, formula, family=family)
-
-        if need_ml_gap:
-            if struct_bundle is None:
-                struct_bundle, proxy_bundles = _load_structure_models(models_dir)
-            hybrid = None
-            if struct_bundle is not None and feats is not None:
-                policy_used = polymorph or struct_bundle.get("recommended_policy", "ground_state")
-                hybrid = _predict_eg_structure_aware(con, material_id, feats, policy_used,
-                                                     struct_bundle, proxy_bundles or {})
-            if hybrid is not None:
-                gap_ev, p_metal, structures_used, mode = hybrid
-                gap_source = "model:lightgbm_structure"
-                gap_method = "ml_prediction"
-                trusted_gap = False
-                if mode != "structure":
-                    policy_used = None
-                    notes.append("no crystal structure in DB — structure-aware model using stored DFT gaps"
-                                 if mode == "dft_only" else
-                                 "not in DB — structure-aware model with composition features only")
-                elif len(structures_used) == 1:
-                    s = structures_used[0]
-                    hull = f", ΔE={s['e_rel']:.3f} eV/atom vs lowest polymorph" if s["e_rel"] is not None else ""
-                    notes.append(f"structure-aware ML ({policy_used}): {s['source']} SG {s['space_group']}{hull}")
-                else:
-                    parts = ", ".join(f"SG {s['space_group']}: {s['gap_ev']:.2f} eV" for s in structures_used)
-                    notes.append(f"structure-aware ML, mean over {len(structures_used)} polymorphs ({parts})")
-            elif eg_bundle is None or feats is None:
-                notes.append("ML Eg unavailable (missing model or features)")
-            else:
-                pred = predict_eg(eg_bundle, feats)
-                gap_ev = float(pred["gap_ev"])
-                p_metal = float(pred["p_metal"])
-                gap_source = "model:lightgbm"
-                gap_method = "ml_prediction"
-                trusted_gap = False
-                policy_used = None
-                if struct_bundle is not None:
-                    notes.append("no crystal structure or DFT data in DB — composition-only model")
-
-        if need_ml_edges and gap_ev is not None and chi is not None:
-            if edge_bundle is not None and feats is not None:
-                pred = predict_edges(edge_bundle, feats, gap_ev, float(chi))
-                cbm_ev = float(pred["cbm_ev"])
-                vbm_ev = float(pred["vbm_ev"])
-                edge_source = "model:lightgbm_delta_cbm"
-                edge_method = "ml_prediction"
-                trusted_edges = False
-            else:
-                cbm_bg, vbm_bg = butler_ginley_edges(float(chi), float(gap_ev))
-                cbm_ev, vbm_ev = float(cbm_bg), float(vbm_bg)
-                edge_source = "butler_ginley"
-                edge_method = "Butler-Ginley"
-                trusted_edges = False
-                notes.append("edge model missing — Butler–Ginley only")
-        elif need_ml_edges and chi is None:
-            notes.append("cannot place edges: missing Mulliken χ")
-
-    if own_con:
-        con.close()
-
-    # Consistency: if we have gap + CBM, enforce VBM = CBM − Eg when edges came from ML/BG
-    if gap_ev is not None and cbm_ev is not None and edge_source.startswith(("model", "butler")):
-        vbm_ev = float(cbm_ev) - float(gap_ev)
-
-    return LayerResult(
-        query=query,
-        formula=formula,
-        material_id=material_id,
-        gap_ev=gap_ev,
-        cbm_ev=cbm_ev,
-        vbm_ev=vbm_ev,
-        gap_source=gap_source,
-        edge_source=edge_source,
-        gap_method=gap_method,
-        edge_method=edge_method,
-        p_metal=p_metal,
-        chi=float(chi) if chi is not None else None,
-        trusted_gap=trusted_gap,
-        trusted_edges=trusted_edges,
-        notes=notes,
-        polymorph_policy=policy_used,
-        structures_used=structures_used,
-    )
-
-
-def classify_junction(top: LayerResult, bottom: LayerResult) -> dict[str, Any]:
-    """Deterministic Type I / II / III from vacuum-aligned edges (top over bottom)."""
-    if None in (top.cbm_ev, top.vbm_ev, bottom.cbm_ev, bottom.vbm_ev):
-        return {"type": None, "uncertain": True, "reason": "missing band edges"}
-
-    # Convention: more negative = deeper vs vacuum
-    cbo = float(bottom.cbm_ev) - float(top.cbm_ev)   # >0: bottom CBM lower (electrons to bottom)
-    vbo = float(top.vbm_ev) - float(bottom.vbm_ev)     # >0: top VBM higher (holes to top)
-
-    # Band extents
-    t_c, t_v = float(top.cbm_ev), float(top.vbm_ev)
-    b_c, b_v = float(bottom.cbm_ev), float(bottom.vbm_ev)
-
-    # Type III broken-gap: gaps do not overlap in energy
-    if t_v > b_c or b_v > t_c:
-        jtype = "III"
-    # Type I straddling: one gap fully contains the other
-    elif (t_c >= b_c and t_v <= b_v) or (b_c >= t_c and b_v <= t_v):
-        jtype = "I"
+    # Band gap: measured, else metal (only metallic elements, e.g. Au, Ag, Al contacts), else ML
+    if formula in t["gaps"].index:
+        row = t["gaps"].loc[formula]
+        layer.gap_ev, layer.gap_kind = float(row.gap_ev), "measured"
+        layer.gap_source = f"measured ({row.basis})"
+    elif all(Element(e).is_metal for e in elements(formula)):
+        layer.gap_ev, layer.gap_kind, layer.gap_source = 0.0, "metal", "metal (only metallic elements)"
     else:
-        jtype = "II"
+        m = model.load()
+        if m is None:
+            layer.notes.append("no trained model: run python train.py")
+            return layer
+        X = model.featurize([formula])
+        layer.gap_ev, layer.gap_kind = float(model.predict(m, X)[0]), "ML"
+        hint = X.dft_gap_hybrid.iloc[0] if pd.notna(X.dft_gap_hybrid.iloc[0]) else X.dft_gap_gga.iloc[0]
+        layer.gap_source = ("ML model, using a DFT gap of {:.2f} eV as a hint".format(hint) if pd.notna(hint)
+                            else "ML model, from the formula only (no DFT data for this formula)")
+    if layer.gap_ev <= METAL_GAP:
+        layer.notes.append("metal: no band gap, so it does not form a semiconductor junction")
 
-    margin = min(abs(cbo), abs(vbo), abs(t_c - b_c), abs(t_v - b_v))
-    either_ml = (not top.trusted_gap) or (not bottom.trusted_gap) or \
-                (not top.trusted_edges) or (not bottom.trusted_edges)
-    uncertain = margin < JUNCTION_BOUNDARY_EV or (either_ml and margin < 2 * JUNCTION_BOUNDARY_EV)
+    # Band edges: measured → hybrid-DFT surfaces → Butler–Ginley
+    chi = mulliken_chi(formula)
+    if use_measured_edges and formula in t["measured_edges"].index:
+        row = t["measured_edges"].loc[formula]
+        layer.vbm_ev = float(row.vbm_ev)
+        layer.cbm_ev = float(row.cbm_ev) if pd.notna(row.cbm_ev) else layer.vbm_ev + layer.gap_ev
+        layer.edge_kind, layer.edge_source = "measured", f"measured (photoemission): {row.reference}"
+        if row.vbm_spread_ev > 0.3:
+            layer.notes.append(f"measured VBMs differ by {row.vbm_spread_ev:.1f} eV (surface/preparation dependent); "
+                               f"median of {row.n_values} used")
+        return layer
+    if chi is None:
+        layer.notes.append("cannot place band edges: no electronegativity for an element")
+        return layer
+    bg = butler_ginley_vbm(chi, layer.gap_ev)
+    if formula in t["surface_edges"].index:
+        row = t["surface_edges"].loc[formula]
+        layer.vbm_ev = SURFACE_WEIGHT * float(row.vbm_ev) + (1 - SURFACE_WEIGHT) * bg
+        layer.edge_kind = "surface"
+        layer.edge_source = (f"hybrid-DFT surfaces ({row.n_values}, Kiyohara 2024): "
+                             f"{SURFACE_WEIGHT:g} × surface VBM + {1 - SURFACE_WEIGHT:.1f} × Butler–Ginley")
+    else:
+        layer.vbm_ev, layer.edge_kind = bg, "estimate"
+        layer.edge_source = f"Butler–Ginley estimate: VBM = −χ − Eg/2 with χ = {chi:.2f} eV"
+    layer.cbm_ev = layer.vbm_ev + layer.gap_ev
+    return layer
 
-    return {
-        "type": jtype,
-        "cbo_ev": cbo,
-        "vbo_ev": vbo,
-        "margin_ev": margin,
-        "uncertain": uncertain,
-        "reason": (
-            f"offset margin {margin:.3f} eV near {JUNCTION_BOUNDARY_EV} eV boundary"
-            if uncertain and margin < JUNCTION_BOUNDARY_EV
-            else ("ML-involved edges near boundary" if uncertain else "ok")
-        ),
-    }
+
+def _organic_layer(name: str, target: str, use_measured_edges: bool) -> Layer:
+    """Molecules and polymers: no ML and no Butler–Ginley (both need an inorganic formula); measured only."""
+    layer = Layer(query=name, formula=target, display_formula=target.split(":", 1)[1])
+    edges = _tables()["measured_edges"]
+    if not use_measured_edges or target not in edges.index or pd.isna(edges.loc[target].cbm_ev):
+        layer.notes.append("organic layer without a measured ionization energy and electron affinity "
+                           "(add one to data/curated/measured_band_edges.csv)")
+        return layer
+    row = edges.loc[target]
+    layer.vbm_ev, layer.cbm_ev = float(row.vbm_ev), float(row.cbm_ev)
+    layer.gap_ev, layer.gap_kind = layer.cbm_ev - layer.vbm_ev, "measured"
+    layer.gap_source = "measured transport gap (EA − IE)"
+    layer.edge_kind, layer.edge_source = "measured", f"measured (photoemission): {row.reference}"
+    return layer
 
 
-def resolve_stack(
-    names: list[str],
-    *,
-    db_path: Path = DB_PATH,
-    models_dir: Path = MODELS_DIR,
-    max_lookup_rank: int = DEFAULT_MAX_LOOKUP_RANK,
-    polymorph: str | None = None,
-) -> dict[str, Any]:
-    con = connect(db_path)
-    eg_bundle, edge_bundle = _load_models(models_dir)
-    struct_bundle, proxy_bundles = _load_structure_models(models_dir)
-    layers = [
-        resolve_layer(n, db_path=db_path, models_dir=models_dir, max_lookup_rank=max_lookup_rank,
-                      con=con, eg_bundle=eg_bundle, edge_bundle=edge_bundle, polymorph=polymorph,
-                      struct_bundle=struct_bundle, proxy_bundles=proxy_bundles)
-        for n in names
-    ]
-    con.close()
-    junctions = []
-    for i in range(len(layers) - 1):
-        junctions.append({
-            "interface": f"{layers[i].formula or layers[i].query} | {layers[i+1].formula or layers[i+1].query}",
-            **classify_junction(layers[i], layers[i + 1]),
-        })
-    return {
-        "max_lookup_rank": max_lookup_rank,
-        "polymorph": polymorph or (struct_bundle or {}).get("recommended_policy", "ground_state"),
-        "layers": [L.to_dict() for L in layers],
-        "junctions": junctions,
-    }
+# --------------------------------------------------------------------------- one junction
+
+def junction_type(top_vbm: float, top_cbm: float, bottom_vbm: float, bottom_cbm: float) -> str:
+    """Type I (straddling: one gap inside the other), III (broken gap: the bands overlap) or II (staggered)."""
+    if top_vbm > bottom_cbm or bottom_vbm > top_cbm:
+        return "III"
+    if (top_cbm >= bottom_cbm and top_vbm <= bottom_vbm) or (bottom_cbm >= top_cbm and bottom_vbm <= top_vbm):
+        return "I"
+    return "II"
+
+
+def type_probabilities(gap_top: float, gap_bottom: float, vbo: float, s_gap_top: float, s_gap_bottom: float,
+                       s_vbo: float, n: int = N_SAMPLES) -> dict[str, float]:
+    """P(type I/II/III): sample both gaps and the offset from normal distributions, apply junction_type to each."""
+    rng = np.random.default_rng(0)
+    gt = np.clip(rng.normal(gap_top, s_gap_top, n), 0.0, None)
+    gb = np.clip(rng.normal(gap_bottom, s_gap_bottom, n), 0.0, None)
+    v = rng.normal(vbo, s_vbo, n)
+    t_v, t_c, b_v, b_c = 0.0, gt, -v, -v + gb               # energies relative to the top layer's VBM
+    broken = (t_v > b_c) | (b_v > t_c)
+    straddling = ((t_c >= b_c) & (t_v <= b_v)) | ((b_c >= t_c) & (b_v <= t_v))
+    p3, p1 = broken.mean(), (straddling & ~broken).mean()
+    return {"I": float(p1), "II": float(1 - p1 - p3), "III": float(p3)}
+
+
+def measured_offset(top: Layer, bottom: Layer) -> dict[str, Any] | None:
+    """Measured interface offset for this pair (either order), as vbo = VBM(top) − VBM(bottom) and
+    cbo = CBM(bottom) − CBM(top). The file stores VBM(substrate) − VBM(film) and CBM(substrate) − CBM(film)."""
+    off = _tables()["offsets"]
+    for film, sign in ((top.formula, 1.0), (bottom.formula, -1.0)):
+        other = bottom.formula if sign > 0 else top.formula
+        hit = off[(off.film == film) & (off.substrate == other)]
+        if len(hit):
+            r = hit.iloc[0]
+            cbo = to_float(r.cbo_substrate_minus_film)
+            return {"vbo": -sign * float(r.vbo_substrate_minus_film), "cbo": sign * cbo if cbo is not None else None,
+                    "reference": r.reference}
+    return None
+
+
+def classify_junction(top: Layer, bottom: Layer, use_measured_edges: bool = True) -> dict[str, Any]:
+    """Offsets, type and confidence for ``top`` on ``bottom``.
+    vbo = VBM(top) − VBM(bottom) > 0: holes collect in the top layer;
+    cbo = CBM(bottom) − CBM(top) > 0: electrons collect in the top layer."""
+    out = {"interface": f"{top.query} | {bottom.query}", "type": None, "uncertain": True}
+    if None in (top.gap_ev, bottom.gap_ev, top.vbm_ev, bottom.vbm_ev):
+        return {**out, "reason": "a layer has no band gap or band edges"}
+    if min(top.gap_ev, bottom.gap_ev) <= METAL_GAP:
+        return {**out, "reason": "metal contact: no semiconductor junction type"}
+
+    gap_t, gap_b = top.gap_ev, bottom.gap_ev
+    off = measured_offset(top, bottom) if use_measured_edges else None
+    if off is not None:
+        vbo, s_vbo = off["vbo"], SIGMA_MEASURED_OFFSET
+        source = f"measured interface offset ({off['reference']})"
+        if off["cbo"] is not None:                # measured at the real interface: use it as is
+            gap_b = gap_t + off["cbo"] + vbo
+    else:
+        vbo = top.vbm_ev - bottom.vbm_ev
+        s_vbo = math.hypot(SIGMA_VBM[top.edge_kind], SIGMA_VBM[bottom.edge_kind])
+        source = "vacuum alignment of the two layers (Anderson's rule)"
+    cbo = -vbo + gap_b - gap_t
+    jtype = junction_type(0.0, gap_t, -vbo, -vbo + gap_b)
+    probs = type_probabilities(gap_t, gap_b, vbo, SIGMA_GAP[top.gap_kind], SIGMA_GAP[bottom.gap_kind], s_vbo)
+    conf = probs[jtype]
+    return {**out, "type": jtype, "vbo_ev": vbo, "cbo_ev": cbo, "vbo_sigma_ev": s_vbo,
+            "margin_ev": min(abs(vbo), abs(cbo)), "offset_source": source, "type_probabilities": probs,
+            "confidence": conf, "uncertain": conf < CONFIDENT,
+            "reason": "check with DFT" if conf < CONFIDENT else "confident"}
+
+
+def predict_stack(names: list[str], use_measured_edges: bool = True) -> dict[str, Any]:
+    """All layers of a device (top first) and the junction between each neighbouring pair."""
+    layers = [resolve_layer(n, use_measured_edges) for n in names]
+    junctions = [classify_junction(a, b, use_measured_edges) for a, b in zip(layers, layers[1:])]
+    return {"layers": [L.to_dict() for L in layers], "junctions": junctions}

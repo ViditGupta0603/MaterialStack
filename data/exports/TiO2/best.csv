@@ -1,3 +1,0 @@
-material_id,material_key,formula_reduced,material_name,phase_tag,material_class,family,best_gap,best_gap_method,best_gap_source,best_cbm,best_vbm,best_edge_method,best_edge_source,n_records,gap_min,gap_max,n_with_structure
-468,TiO2|,TiO2,TiO2,,inorganic_bulk,oxide,3.3,experiment,expt_gap,,,,,129,0.0,3.947669,90
-68851,TiO2|2D,TiO2,TiO2,2D,inorganic_2d,oxide,4.04,HSE06,jarvis_dft_2d,,,,,4,0.0,4.04,4

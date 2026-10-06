@@ -1,0 +1,11 @@
+2 Stage model working in depth and why?
+5-Fold CV plus grouping samjhana
+Different MAE metric (borlido,Cv,etc)
+Structure input working?
+Proxy ka logic? need?
+
+Surface calculation what??
+Edge prediction ML or logic or what?
+
+Final preditction rule explanation
+

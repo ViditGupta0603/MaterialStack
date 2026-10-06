@@ -1,2 +1,0 @@
-material_id,material_key,formula_reduced,formula_raw,material_name,phase_tag,material_class,anonymized_formula,n_elements,elements,family,is_perovskite_like,tolerance_factor,octahedral_factor,mulliken_chi
-849,Cs2AgBiBr6|,Cs2AgBiBr6,Cs2AgBiBr6,Cs2AgBiBr6,,inorganic_bulk,ABC2D6,4,"[""Ag"", ""Bi"", ""Br"", ""Cs""]",double_perovskite,1,0.8416,0.6758,5.2731341714755064

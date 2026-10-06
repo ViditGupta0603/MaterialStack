@@ -1,0 +1,43 @@
+alias,formula,note
+MAPbI3,CH3NH3PbI3,methylammonium lead iodide
+MAPbBr3,CH3NH3PbBr3,methylammonium lead bromide
+MAPbCl3,CH3NH3PbCl3,methylammonium lead chloride
+MASnI3,CH3NH3SnI3,methylammonium tin iodide
+MASnBr3,CH3NH3SnBr3,methylammonium tin bromide
+FAPbI3,CH5N2PbI3,formamidinium lead iodide
+FAPbBr3,CH5N2PbBr3,formamidinium lead bromide
+FASnI3,CH5N2SnI3,formamidinium tin iodide
+Cs0.05(FA0.77MA0.23)0.95Pb(I0.77Br0.23)3,Cs0.05C0.95H4.9685N1.6815PbI2.31Br0.69,"triple-cation perovskite, FA = CH5N2 and MA = CH3NH3 expanded"
+CIGS,CuIn0.7Ga0.3Se2,"Cu(In,Ga)Se2 with the typical Ga fraction 0.3"
+CIS,CuInSe2,copper indium selenide
+CGS,CuGaSe2,copper gallium selenide
+CIT,CuInTe2,copper indium telluride
+CZTS,Cu2ZnSnS4,kesterite sulfide
+CZTSe,Cu2ZnSnSe4,kesterite selenide
+CZTSSe,Cu2ZnSnS2Se2,"kesterite sulfoselenide, S:Se = 1:1 assumed"
+CBTS,Cu2BaSnS4,copper barium tin sulfide
+CdZnS,Cd0.5Zn0.5S,"Cd:Zn = 1:1 assumed"
+"Zn(O,S)",ZnO0.5S0.5,"O:S = 1:1 assumed"
+IGZO,InGaZnO4,"crystalline IGZO, In:Ga:Zn = 1:1:1"
+i-ZnO,ZnO,intrinsic (undoped) ZnO window layer
+NiOx,NiO,non-stoichiometric nickel oxide
+MoOx,MoO3,sub-stoichiometric molybdenum oxide
+c-TiO2,TiO2,compact TiO2 (anatase)
+mp-TiO2,TiO2,mesoporous TiO2 (anatase)
+anatase,TiO2,
+rutile,TiO2,
+a-Si,Si,amorphous silicon (treated as crystalline Si)
+ITO,In1.8Sn0.2O3,"In2O3:Sn, ~10% Sn (contact)"
+FTO,SnO2,SnO2:F (contact)
+AZO,ZnO,ZnO:Al (contact)
+Spiro-OMeTAD,organic:Spiro-OMeTAD,organic hole-transport layer
+spiro,organic:Spiro-OMeTAD,
+PTAA,organic:PTAA,poly(triarylamine)
+PEDOT:PSS,organic:PEDOT:PSS,
+P3HT,organic:P3HT,poly(3-hexylthiophene)
+PCBM,organic:PCBM,PC61BM fullerene derivative
+PC61BM,organic:PCBM,
+PC60BM,organic:PCBM,
+PC71BM,organic:PC71BM,
+C60,organic:C60,fullerene (not carbon)
+BCP,organic:BCP,bathocuproine
