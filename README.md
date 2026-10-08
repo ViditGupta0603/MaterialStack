@@ -14,22 +14,25 @@ follows from the four band edges. Its probability comes from the validated error
 
 ## Set up on another computer
 
-1. On your computer: `python make_bundle.py` → `../MaterialStack_bundle.zip` (~57 MB). It contains the
-   code, the downloaded source data (no internet needed for it) and the built web UI (no Node.js needed).
-2. Copy the zip over, unzip it, and install **Python 3.12 or newer** if missing (python.org; on Windows
-   tick "Add python.exe to PATH").
-3. In the unzipped `MaterialStack` folder run **`setup.bat`** (Windows, double-click works) or
-   **`bash setup.sh`** (macOS / Linux). It creates `.venv`, installs the packages (needs internet, a few
-   minutes), builds the data, trains and validates. The numbers in `results/metrics.csv` should match
-   yours (band-gap MAE 0.404 eV).
+Everything the tool needs is in the repository: the source data (`data/raw/`), the built tables, the trained
+model and the built web UI. Only Python packages are installed.
+
+1. Install **Python 3.12 or newer** (python.org; on Windows tick "Add python.exe to PATH") and Git.
+2. `git clone https://github.com/advaymakhija/MaterialStack.git` (or GitHub → Code → Download ZIP).
+3. In the `MaterialStack` folder run **`setup.bat`** (Windows, double-click works) or **`bash setup.sh`**
+   (macOS / Linux). It creates `.venv`, installs the packages (needs internet, a few minutes) and runs one
+   test prediction.
 4. Run it: `.venv\Scripts\python -m materialstack serve` (Windows) or
    `.venv/bin/python -m materialstack serve`, then open http://127.0.0.1:8000.
+
+After `git pull`, nothing needs rebuilding. When you change data or code, rerun the three steps below and commit
+the regenerated files (`data/*.csv`, `models/gap_model.joblib`, `results/`; `frontend/dist/` after a UI change).
 
 ## Three steps
 
 ```bash
 pip install -r requirements.txt
-python build_data.py   # 1. downloads sources to data/raw/, cleans them, writes the data/*.csv tables (~15 s + download)
+python build_data.py   # 1. reads data/raw/ (downloads a source only if its file is missing), cleans them, writes the data/*.csv tables (~15 s + download)
 python train.py        # 2. trains the band-gap model → models/gap_model.joblib (~5 s)
 python validate.py     # 3. cross-validation + benchmarks → results/metrics.csv (~15 s)
 ```
@@ -54,7 +57,7 @@ python -m materialstack serve                              # web UI + API on htt
 | `data/band_edges.csv` | VBM (and CBM) per material: measured and/or hybrid-DFT surfaces | `build_data.py` |
 | `data/features.csv` | The exact table the model trained on (formula, gap, 157 features); for inspection only | `train.py` |
 | `data/multilayer_gold_standard.csv` | 50 published device stacks with band edges, the validation reference | given |
-| `data/raw/` | Downloaded source files, never edited (gitignored) | `build_data.py` |
+| `data/raw/` | Source files as downloaded, never edited (committed, so setup needs no downloads) | `build_data.py` |
 
 Sources: measured gaps from Zhuo et al. 2018 (JPCL) and Borlido et al. 2019 (JCTC); DFT gaps from
 JARVIS-DFT (Choudhary 2020) and SNUMAT (Kim 2020); oxide surfaces from Kiyohara, Hinuma & Oba 2024

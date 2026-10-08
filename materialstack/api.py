@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import mimetypes
 from typing import Any
 
 import pandas as pd
@@ -14,6 +15,10 @@ from materialstack.config import BAND_EDGES, BAND_GAPS, MODEL, RESULTS, ROOT
 from materialstack.predict import predict_stack
 
 FRONTEND_DIST = ROOT / "frontend" / "dist"
+# Windows takes MIME types from the registry, which often says text/plain for .js: the browser then refuses the
+# UI's scripts and shows a white page.
+mimetypes.add_type("text/javascript", ".js")
+mimetypes.add_type("text/css", ".css")
 METRICS = RESULTS / "metrics.json"
 
 app = FastAPI(title="MaterialStack")

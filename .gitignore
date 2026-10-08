@@ -1,8 +1,3 @@
-# downloaded source files (rebuilt by build_data.py)
-data/raw/
-# trained model (rebuilt by train.py)
-models/*.joblib
-
 # python
 __pycache__/
 *.pyc
@@ -10,12 +5,8 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 
-# web UI dependencies and build (npm ci && npm run build)
+# web UI dependencies (frontend/dist, the built UI, is committed so no Node.js is needed)
 frontend/node_modules/
-frontend/dist/
-
-# setup bundle made by make_bundle.py
-*.zip
 
 # local tool settings, editor lock files, OS files
 .claude/settings.local.json
