@@ -6,7 +6,7 @@ Three checks, each against reference data the model never trained on:
   B. Band edges  the curated measured VBMs vs what the tool predicts when the measurements are hidden
                  (hybrid-DFT surfaces or the Butler–Ginley estimate).
   C. Junctions   21 measured valence-band offsets (InterMat, Table 2) and the gold-standard device stacks in
-                 verif/multilayer_gold_standard.csv, each with and without the curated measured band edges.
+                 data/multilayer_gold_standard.csv, each with and without the curated measured band edges.
 
 Writes results/metrics.csv (readable table), results/metrics.json (for the web UI), and two detail tables for
 debugging: results/gap_cv_predictions.csv and results/junction_details.csv.
@@ -211,6 +211,6 @@ if __name__ == "__main__":
     (RESULTS / "metrics.json").write_text(json.dumps({
         "generated": datetime.date.today().isoformat(),
         "model": {"n_features": int(bundle.n_features_in_) if bundle is not None else None},
-        "metrics": METRICS}, indent=1, ensure_ascii=False))
+        "metrics": METRICS}, indent=1, ensure_ascii=False), encoding="utf-8")
     print(f"\nwritten {RESULTS / 'metrics.csv'} ({len(table)} metrics)")
     print(table[["section", "metric", "value", "unit", "n", "baseline"]].to_string(index=False))

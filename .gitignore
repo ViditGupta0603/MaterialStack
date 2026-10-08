@@ -8,5 +8,17 @@ __pycache__/
 *.pyc
 .venv/
 *.egg-info/
+.pytest_cache/
+
+# web UI dependencies and build (npm ci && npm run build)
 frontend/node_modules/
 frontend/dist/
+
+# setup bundle made by make_bundle.py
+*.zip
+
+# local tool settings, editor lock files, OS files
+.claude/settings.local.json
+.~lock.*
+.DS_Store
+Thumbs.db

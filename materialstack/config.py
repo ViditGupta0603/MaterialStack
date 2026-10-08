@@ -22,4 +22,4 @@ BAND_EDGES = DATA / "band_edges.csv"                 # one VBM/CBM per material 
 MODEL = ROOT / "models" / "gap_model.joblib"         # built by train.py
 FEATURES = DATA / "features.csv"                     # written by train.py for inspection; never read back
 RESULTS = ROOT / "results"                           # written by validate.py
-GOLD_STACKS = ROOT / "verif" / "multilayer_gold_standard.csv"
+GOLD_STACKS = DATA / "multilayer_gold_standard.csv"

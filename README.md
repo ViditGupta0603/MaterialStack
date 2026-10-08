@@ -11,6 +11,19 @@ Band edges come from photoemission measurements, else hybrid-DFT surface calcula
 the Butler–Ginley electronegativity estimate (VBM = −χ − Eg/2). The junction type is not learned: it
 follows from the four band edges. Its probability comes from the validated error of every input.
 
+## Set up on another computer
+
+1. On your computer: `python make_bundle.py` → `../MaterialStack_bundle.zip` (~57 MB). It contains the
+   code, the downloaded source data (no internet needed for it) and the built web UI (no Node.js needed).
+2. Copy the zip over, unzip it, and install **Python 3.11 or newer** if missing (python.org; on Windows
+   tick "Add python.exe to PATH").
+3. In the unzipped `MaterialStack` folder run **`setup.bat`** (Windows, double-click works) or
+   **`bash setup.sh`** (macOS / Linux). It creates `.venv`, installs the packages (needs internet, a few
+   minutes), builds the data, trains and validates. The numbers in `results/metrics.csv` should match
+   yours (band-gap MAE 0.397 eV).
+4. Run it: `.venv\Scripts\python -m materialstack serve` (Windows) or
+   `.venv/bin/python -m materialstack serve`, then open http://127.0.0.1:8000.
+
 ## Three steps
 
 ```bash
@@ -38,6 +51,8 @@ python -m materialstack serve                              # web UI + API on htt
 | `data/band_gaps_rejected.csv` | Every report that was not used, with the rule (R1–R6) and the reason | `build_data.py` |
 | `data/dft_gaps.csv` | One GGA and one hybrid DFT gap per formula (stable polymorphs): the model's hint | `build_data.py` |
 | `data/band_edges.csv` | VBM (and CBM) per material: measured and/or hybrid-DFT surfaces | `build_data.py` |
+| `data/features.csv` | The exact table the model trained on (formula, gap, 157 features); for inspection only | `train.py` |
+| `data/multilayer_gold_standard.csv` | 50 published device stacks with band edges, the validation reference | given |
 | `data/raw/` | Downloaded source files, never edited (gitignored) | `build_data.py` |
 
 Sources: measured gaps from Zhuo et al. 2018 (JPCL) and Borlido et al. 2019 (JCTC); DFT gaps from
@@ -67,8 +82,8 @@ fold, so the score is for unseen chemistry.
 | Gold device stacks: junction type | 61 %; 82 % for confident calls | 61 % (always Type II) |
 
 The gold stacks' band edges are SCAPS simulation inputs, which differ from photoemission measurements
-by 0.4–0.8 eV for TiO2, SnO2, C60 and others (`literature_advay/findings.md`, F22), so type accuracy
-against them has a ceiling set by the reference itself.
+by 0.4–0.8 eV for TiO2, SnO2, C60 and others, so type accuracy against them has a ceiling set by the
+reference itself.
 
 ## Code
 
@@ -84,5 +99,5 @@ against them has a ceiling set by the reference itself.
 | `frontend/` | | React UI (`npm run build`; served by `serve`) |
 | `tests/` | | `python -m pytest -q` |
 
-`literature_advay/` holds the literature notes, data-credibility audit and the dated findings log;
-`CHANGELOG.md` records every change.
+Literature notes, the data-credibility audit, the findings log and the change history are kept outside
+this folder, in `../MaterialStack_extras/`.
