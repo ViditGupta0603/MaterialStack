@@ -8,7 +8,7 @@ MaterialStack screens band alignment of device stacks: per layer the band gap (E
 
 ## Commands
 
-A virtualenv lives in `.venv/` (`pip install -r requirements.txt`; versions are pinned to the ones that produced `results/metrics.csv`, which needs Python 3.12+).
+Everything needed to run is committed (`data/raw/`, built CSVs, `models/gap_model.joblib`, `frontend/dist/`), so a clone only needs `setup.sh`/`setup.bat` (venv + packages); after changing data, model or UI, commit the regenerated files too. A virtualenv lives in `.venv/` (`pip install -r requirements.txt`; versions are pinned to the ones that produced `results/metrics.csv`, which needs Python 3.12+).
 
 ```bash
 python build_data.py      # data/raw (downloads if missing) -> data/band_gaps.csv, band_gaps_rejected.csv, dft_gaps.csv, band_edges.csv
