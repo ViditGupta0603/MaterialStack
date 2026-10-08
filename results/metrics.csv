@@ -1,36 +1,78 @@
-section,metric,value,unit,n,baseline,baseline_rule,note
-"A. Band gap (ML model, grouped 5-fold CV)",MAE,0.397,eV,2509,1.118,predict the mean gap,semiconductors/insulators with a measured gap; error = |predicted − measured|
-"A. Band gap (ML model, grouped 5-fold CV)",RMSE,0.584,eV,2509,,,
-"A. Band gap (ML model, grouped 5-fold CV)",R²,0.863,,2509,,,
-"A. Band gap (ML model, grouped 5-fold CV)",Spearman rank correlation,0.908,,2509,,,
-"A. Band gap (ML model, grouped 5-fold CV)",Within 0.3 eV,53.886,%,2509,,,
-"A. Band gap (ML model, grouped 5-fold CV)",Within 0.5 eV,73.615,%,2509,,,
-"A. Band gap (ML model, grouped 5-fold CV)","MAE, materials with a DFT hint",0.426,eV,1169,,,
-"A. Band gap (ML model, grouped 5-fold CV)","MAE, formula only (no DFT data)",0.372,eV,1340,,,what to expect for a new composition
-"A. Band gap (ML model, grouped 5-fold CV)",MAE where a hybrid DFT gap exists,0.423,eV,981,0.54,use the hybrid DFT gap (HSE06/TBmBJ) directly,
-"A. Band gap (ML model, grouped 5-fold CV)",MAE where a GGA DFT gap exists,0.426,eV,1169,0.959,use the GGA DFT gap (PBE/OptB88vdW) directly,
-"A. Band gap (ML model, grouped 5-fold CV)",MAE on the Borlido benchmark materials,0.439,eV,445,,,best-curated experimental labels
-"A. Band gap (ML model, grouped 5-fold CV)",MAE for gaps of 1–3.5 eV (solar-cell layers),0.357,eV,1592,,,
-B. Band edges (measured VBM hidden),"VBM MAE, hybrid-DFT surfaces",0.522,eV,5,,,what the tool predicts for a material without photoemission data
-B. Band edges (measured VBM hidden),"VBM bias, hybrid-DFT surfaces",-0.117,eV,5,,,negative = predicted too deep
-B. Band edges (measured VBM hidden),"VBM MAE, Butler–Ginley estimate",1.077,eV,35,,,what the tool predicts for a material without photoemission data
-B. Band edges (measured VBM hidden),"VBM bias, Butler–Ginley estimate",-0.663,eV,35,,,negative = predicted too deep
-B. Band edges (measured VBM hidden),Spread between independent measurements of one material,0.9,eV,3,,,noise floor of the reference data itself (median)
-"C1. Measured band offsets (21 interfaces, InterMat Table 2)","|ΔEv| MAE, tool",0.448,eV,21,0.839,predict ΔEv = 0,with measured edges this is partly circular: several of these layers' electron affinities come from InterMat Table 1
-"C1. Measured band offsets (21 interfaces, InterMat Table 2)","|ΔEv| MAE, tool without measured edges",0.589,eV,21,0.839,predict ΔEv = 0,Butler–Ginley / hybrid-DFT surfaces only
-C2. Gold-standard device stacks,"Coverage, tool",100.0,%,102,,,junctions with a prediction
-C2. Gold-standard device stacks,"Type accuracy, tool",60.784,%,102,60.784,always predict Type II,
-C2. Gold-standard device stacks,"Type accuracy on clear junctions (both offsets ≥ 0.2 eV), tool",45.455,%,22,72.727,always predict Type II,near-zero offsets make the type hinge on a few tenths of an eV
-C2. Gold-standard device stacks,"Type accuracy when confident (≥ 80 %), tool",81.818,%,11,,,junctions not flagged 'check with DFT'
-C2. Gold-standard device stacks,"ΔEc MAE, tool",0.51,eV,102,0.447,predict ΔEc = 0,
-C2. Gold-standard device stacks,"ΔEc sign agreement (|gold| ≥ 0.1 eV), tool",80.0,%,65,,,spike vs cliff: decides whether carriers are extracted or blocked
-C2. Gold-standard device stacks,"ΔEv MAE, tool",0.577,eV,102,0.804,predict ΔEv = 0,
-C2. Gold-standard device stacks,"ΔEv sign agreement (|gold| ≥ 0.1 eV), tool",82.5,%,80,,,spike vs cliff: decides whether carriers are extracted or blocked
-C2. Gold-standard device stacks,"Coverage, tool without measured edges",91.176,%,102,,,junctions with a prediction
-C2. Gold-standard device stacks,"Type accuracy, tool without measured edges",61.29,%,93,62.366,always predict Type II,
-C2. Gold-standard device stacks,"Type accuracy on clear junctions (both offsets ≥ 0.2 eV), tool without measured edges",45.455,%,22,72.727,always predict Type II,near-zero offsets make the type hinge on a few tenths of an eV
-C2. Gold-standard device stacks,"Type accuracy when confident (≥ 80 %), tool without measured edges",,%,0,,,junctions not flagged 'check with DFT'
-C2. Gold-standard device stacks,"ΔEc MAE, tool without measured edges",0.801,eV,93,0.474,predict ΔEc = 0,
-C2. Gold-standard device stacks,"ΔEc sign agreement (|gold| ≥ 0.1 eV), tool without measured edges",56.452,%,62,,,spike vs cliff: decides whether carriers are extracted or blocked
-C2. Gold-standard device stacks,"ΔEv MAE, tool without measured edges",0.705,eV,93,0.852,predict ΔEv = 0,
-C2. Gold-standard device stacks,"ΔEv sign agreement (|gold| ≥ 0.1 eV), tool without measured edges",64.865,%,74,,,spike vs cliff: decides whether carriers are extracted or blocked
+section,metric,value,unit,n,ci_low,ci_high,baseline,baseline_rule,primary,note
+"A. Band gap (ML model, grouped 5-fold CV)",MAE,0.404,eV,2535,0.383,0.425,1.132,predict the mean gap,True,semiconductors/insulators with a measured gap; error = |predicted − measured|
+"A. Band gap (ML model, grouped 5-fold CV)",RMSE,0.609,eV,2535,0.569,0.651,,,False,
+"A. Band gap (ML model, grouped 5-fold CV)",R²,0.855,,2535,,,,,False,
+"A. Band gap (ML model, grouped 5-fold CV)",Spearman rank correlation,0.905,,2535,,,,,False,
+"A. Band gap (ML model, grouped 5-fold CV)",Within 0.3 eV,54.201,%,2535,51.79,56.466,,,False,
+"A. Band gap (ML model, grouped 5-fold CV)",Within 0.5 eV,72.781,%,2535,70.711,74.773,,,False,
+"A. Band gap (ML model, grouped 5-fold CV)","MAE, materials with a DFT hint",0.446,eV,1201,0.418,0.474,,,False,
+"A. Band gap (ML model, grouped 5-fold CV)","MAE, formula only (no DFT data)",0.366,eV,1334,0.338,0.397,,,False,what to expect for a new composition
+"A. Band gap (ML model, grouped 5-fold CV)",MAE where a hybrid DFT gap exists,0.448,eV,1013,0.414,0.482,0.595,use the hybrid DFT gap (HSE06/TBmBJ) directly,False,
+"A. Band gap (ML model, grouped 5-fold CV)",MAE where a GGA DFT gap exists,0.446,eV,1201,0.418,0.474,0.988,use the GGA DFT gap (PBE/OptB88vdW) directly,False,
+"A. Band gap (ML model, grouped 5-fold CV)",MAE on the Borlido benchmark materials,0.441,eV,445,0.399,0.496,,,False,best-curated experimental labels
+"A. Band gap (ML model, grouped 5-fold CV)",MAE for gaps of 1–3.5 eV (solar-cell layers),0.355,eV,1602,0.335,0.376,,,False,
+A2. Band gap detail,"MAE, Borlido labels",0.441,eV,445,0.399,0.496,,,False,
+A2. Band gap detail,"MAE, curated-literature labels",0.243,eV,19,0.126,0.377,,,False,"small n, indicative"
+A2. Band gap detail,"MAE, consensus labels (Zhuo 2018)",0.397,eV,2071,0.375,0.418,,,False,
+A2. Band gap detail,"MAE, oxides",0.612,eV,538,0.563,0.666,,,False,
+A2. Band gap detail,"MAE, chalcogenides",0.306,eV,1470,0.286,0.328,,,False,
+A2. Band gap detail,"MAE, halides",0.569,eV,144,0.459,0.691,,,False,
+A2. Band gap detail,"MAE, pnictides",0.376,eV,267,0.332,0.426,,,False,
+A2. Band gap detail,"MAE, other chemistries",0.536,eV,116,0.398,0.737,,,False,
+A2. Band gap detail,"MAE, gaps below 1 eV",0.312,eV,578,0.276,0.351,,,False,
+A2. Band gap detail,"MAE, gaps above 3.5 eV",0.772,eV,355,0.697,0.861,,,False,
+A2. Band gap detail,Predicted as metal (< 0.1 eV),0.039,%,2535,0.0,0.12,,,False,semiconductors the model would call metallic
+A2. Band gap detail,Label noise floor: spread between reports of one material,0.15,eV,650,,,,,False,median max − min of the agreeing reports; errors below this cannot be judged
+B. Band edges (measured VBM hidden),"VBM MAE, hybrid-DFT surfaces",0.522,eV,5,0.285,0.765,,,False,"what the tool predicts for a material without photoemission data; small n, indicative"
+B. Band edges (measured VBM hidden),"VBM bias, hybrid-DFT surfaces",-0.117,eV,5,-0.594,0.399,,,False,"negative = predicted too deep; small n, indicative"
+B. Band edges (measured VBM hidden),"VBM MAE, Butler–Ginley estimate",0.572,eV,39,0.405,0.774,,,False,what the tool predicts for a material without photoemission data
+B. Band edges (measured VBM hidden),"VBM bias, Butler–Ginley estimate",-0.092,eV,39,-0.367,0.173,,,False,negative = predicted too deep
+B. Band edges (measured VBM hidden),Spread between independent measurements of one material,0.9,eV,3,,,,,False,"noise floor of the reference data itself (median); small n, indicative"
+B2. Band edges summary,"VBM MAE, fallback rule (all)",0.567,eV,44,0.412,0.743,,,True,"surfaces where available, else Butler–Ginley"
+"C1. Measured band offsets (21 interfaces, InterMat Table 2)","|ΔEv| MAE, tool",0.444,eV,21,0.291,0.601,0.839,predict ΔEv = 0,False,with measured edges this is partly circular: several of these layers' electron affinities come from InterMat Table 1
+"C1. Measured band offsets (21 interfaces, InterMat Table 2)","|ΔEv| MAE, tool without measured edges",0.589,eV,21,0.444,0.736,0.839,predict ΔEv = 0,True,Butler–Ginley / hybrid-DFT surfaces only
+C2. Gold-standard device stacks,"Coverage, tool",100.0,%,102,100.0,100.0,,,False,junctions with a prediction
+C2. Gold-standard device stacks,"Type accuracy, tool",58.824,%,102,49.514,68.629,60.784,always predict Type II,False,
+C2. Gold-standard device stacks,"Type accuracy on clear junctions (both offsets ≥ 0.2 eV), tool",45.455,%,22,26.087,65.217,72.727,always predict Type II,False,near-zero offsets make the type hinge on a few tenths of an eV
+C2. Gold-standard device stacks,"Type accuracy when confident (≥ 80 %), tool",75.0,%,16,56.25,93.333,,,True,"junctions not flagged 'check with DFT'; small n, indicative"
+C2. Gold-standard device stacks,"ΔEc MAE, tool",0.497,eV,102,0.393,0.654,0.447,predict ΔEc = 0,True,
+C2. Gold-standard device stacks,"ΔEc sign agreement (|gold| ≥ 0.1 eV), tool",80.0,%,65,71.636,88.571,,,True,spike vs cliff: decides whether carriers are extracted or blocked
+C2. Gold-standard device stacks,"ΔEv MAE, tool",0.533,eV,102,0.452,0.626,0.804,predict ΔEv = 0,True,
+C2. Gold-standard device stacks,"ΔEv sign agreement (|gold| ≥ 0.1 eV), tool",85.0,%,80,77.213,92.593,,,True,spike vs cliff: decides whether carriers are extracted or blocked
+C2. Gold-standard device stacks,"Coverage, tool without measured edges",91.176,%,102,85.573,96.117,,,False,junctions with a prediction
+C2. Gold-standard device stacks,"Type accuracy, tool without measured edges",53.763,%,93,43.614,63.446,62.366,always predict Type II,False,
+C2. Gold-standard device stacks,"Type accuracy on clear junctions (both offsets ≥ 0.2 eV), tool without measured edges",36.364,%,22,18.182,54.545,72.727,always predict Type II,False,near-zero offsets make the type hinge on a few tenths of an eV
+C2. Gold-standard device stacks,"Type accuracy when confident (≥ 80 %), tool without measured edges",100.0,%,1,100.0,100.0,,,False,"junctions not flagged 'check with DFT'; small n, indicative"
+C2. Gold-standard device stacks,"ΔEc MAE, tool without measured edges",0.649,eV,93,0.518,0.794,0.474,predict ΔEc = 0,False,
+C2. Gold-standard device stacks,"ΔEc sign agreement (|gold| ≥ 0.1 eV), tool without measured edges",64.516,%,62,51.612,75.869,,,False,spike vs cliff: decides whether carriers are extracted or blocked
+C2. Gold-standard device stacks,"ΔEv MAE, tool without measured edges",0.571,eV,93,0.458,0.693,0.852,predict ΔEv = 0,False,
+C2. Gold-standard device stacks,"ΔEv sign agreement (|gold| ≥ 0.1 eV), tool without measured edges",70.27,%,74,61.333,78.667,,,False,spike vs cliff: decides whether carriers are extracted or blocked
+D. Uncertainty calibration,ML band gap: errors within ±1σ,72.781,%,2535,70.711,74.773,,,False,68 % if σ is right
+D. Uncertainty calibration,ML band gap: errors within ±2σ,91.598,%,2535,90.413,92.714,,,False,95 % if σ is right
+D. Uncertainty calibration,ML band gap: σ suggested by the errors (RMS),0.609,eV,2535,0.569,0.651,0.5,σ used by the tool (predict.py),False,
+D. Uncertainty calibration,"VBM, hybrid-DFT surfaces: errors within ±1σ",60.0,%,5,20.0,100.0,,,False,"68 % if σ is right; small n, indicative"
+D. Uncertainty calibration,"VBM, hybrid-DFT surfaces: errors within ±2σ",100.0,%,5,100.0,100.0,,,False,"95 % if σ is right; small n, indicative"
+D. Uncertainty calibration,"VBM, hybrid-DFT surfaces: σ suggested by the errors (RMS)",0.588,eV,5,0.315,0.772,0.65,σ used by the tool (predict.py),False,"small n, indicative"
+D. Uncertainty calibration,"VBM, Butler–Ginley: errors within ±1σ",92.308,%,39,84.615,100.0,,,False,68 % if σ is right
+D. Uncertainty calibration,"VBM, Butler–Ginley: errors within ±2σ",100.0,%,39,100.0,100.0,,,False,95 % if σ is right
+D. Uncertainty calibration,"VBM, Butler–Ginley: σ suggested by the errors (RMS)",0.822,eV,39,0.543,1.076,1.3,σ used by the tool (predict.py),False,
+D. Uncertainty calibration,ΔEv without measured edges: errors within ±1σ,100.0,%,21,100.0,100.0,,,False,68 % if σ is right
+D. Uncertainty calibration,ΔEv without measured edges: errors within ±2σ,100.0,%,21,100.0,100.0,,,False,95 % if σ is right
+D. Uncertainty calibration,ΔEv without measured edges: σ suggested by the errors (RMS),0.692,eV,21,0.534,0.824,1.82,σ used by the tool (predict.py),False,
+D. Uncertainty calibration,Brier score of the junction-type probabilities (gold stacks),0.637,,102,0.547,0.73,0.784,always Type II with certainty,True,"0 = perfect, lower is better"
+D. Uncertainty calibration,Expected calibration error (gold stacks),9.443,%,102,,,,,False,|accuracy − confidence| averaged over 5 confidence bins; 0 = perfectly calibrated
+D. Uncertainty calibration,Reliability: accuracy at confidence 0%–60%,43.396,%,53,29.167,57.415,34.374,mean confidence in the bin (equal when calibrated),False,
+D. Uncertainty calibration,Reliability: accuracy at confidence 60%–70%,80.0,%,15,60.0,100.0,66.96,mean confidence in the bin (equal when calibrated),False,"small n, indicative"
+D. Uncertainty calibration,Reliability: accuracy at confidence 70%–80%,72.222,%,18,52.632,88.889,74.044,mean confidence in the bin (equal when calibrated),False,"small n, indicative"
+D. Uncertainty calibration,Reliability: accuracy at confidence 80%–90%,83.333,%,6,40.0,100.0,85.862,mean confidence in the bin (equal when calibrated),False,"small n, indicative"
+D. Uncertainty calibration,Reliability: accuracy at confidence 90%–100%,70.0,%,10,44.444,100.0,94.143,mean confidence in the bin (equal when calibrated),False,"small n, indicative"
+D. Uncertainty calibration,Share of junctions called with ≥ 80 % confidence,15.686,%,102,8.333,23.08,,,True,how often the tool commits; read with the accuracy when confident
+E. Data coverage,Semiconductors with a measured gap (training labels),2535.0,,2535,,,,,False,
+E. Data coverage,Share with a GGA DFT hint,47.377,%,2535,,,,,False,
+E. Data coverage,Share with a hybrid DFT hint,39.961,%,2535,,,,,False,
+E. Data coverage,Materials with measured band edges,47.0,,,,,,,False,
+E. Data coverage,Oxides with hybrid-DFT surface edges,322.0,,,,,,,False,
+E. Data coverage,Measured interface offsets (used by the tool),3.0,,,,,,,False,
+E. Data coverage,Reference offsets for C1,21.0,,,,,,,False,
+E. Data coverage,Device-stack layers with a measured gap,65.132,%,152,57.329,72.26,,,False,
+E. Data coverage,Device-stack layers with measured band edges,48.684,%,152,41.059,55.484,,,False,

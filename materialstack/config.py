@@ -12,6 +12,7 @@ CURATED = DATA / "curated"                           # hand-made, cited tables (
 MEASURED_EDGES = CURATED / "measured_band_edges.csv"
 MEASURED_OFFSETS = CURATED / "measured_band_offsets.csv"
 ALIASES = CURATED / "aliases.csv"
+VALIDATION_OFFSETS = CURATED / "validation_band_offsets.csv"   # measured offsets used only to score the tool
 
 # Built by build_data.py
 BAND_GAPS = DATA / "band_gaps.csv"                   # one measured gap per material (training labels + lookup)
@@ -22,4 +23,4 @@ BAND_EDGES = DATA / "band_edges.csv"                 # one VBM/CBM per material 
 MODEL = ROOT / "models" / "gap_model.joblib"         # built by train.py
 FEATURES = DATA / "features.csv"                     # written by train.py for inspection; never read back
 RESULTS = ROOT / "results"                           # written by validate.py
-GOLD_STACKS = ROOT / "verif" / "multilayer_gold_standard.csv"
+GOLD_STACKS = DATA / "multilayer_gold_standard.csv"

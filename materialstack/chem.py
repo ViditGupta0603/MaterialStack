@@ -64,6 +64,31 @@ def mulliken_chi(formula: str) -> float | None:
     return math.exp(acc / c.num_atoms)
 
 
+_ORGANIC = {"C", "H", "N"}
+_HALIDES = {"F", "Cl", "Br", "I"}
+_B_SITE = {"Pb", "Sn", "Ge", "Bi", "Sb", "Ag", "In", "Cu"}
+
+
+def inorganic_surrogate(formula: str) -> str:
+    """Hybrid halide perovskites with their small organic A-site cations (MA = CH3NH3, FA = CH(NH2)2) counted as Cs:
+    'CH3NH3PbI3' → 'CsPbI3'. The A-site molecule adds no states at the band edges (these come from the B-site
+    metal and the halide), but its H, C and N would pull the electronegativity average far off. Each MA/FA
+    holds one carbon, so the number of cations is the carbon count; larger organic spacers (more carbons than
+    B-site metals, e.g. PEA2PbI4) are left as they are. Any other formula is returned unchanged."""
+    c = composition(formula)
+    if c is None:
+        return formula
+    amounts = {e.symbol: n for e, n in c.items()}
+    n_b = sum(n for e, n in amounts.items() if e in _B_SITE)
+    if not (_ORGANIC <= amounts.keys() and amounts.keys() & _HALIDES and 0 < amounts["C"] <= n_b):
+        return formula
+    n_a = amounts["C"]
+    for e in _ORGANIC:
+        amounts.pop(e)
+    amounts["Cs"] = amounts.get("Cs", 0.0) + n_a
+    return Composition(amounts).reduced_formula
+
+
 def butler_ginley_vbm(chi: float, gap: float) -> float:
     """VBM vs vacuum when nothing better is known: the gap sits symmetrically around −χ."""
     return -chi - gap / 2.0

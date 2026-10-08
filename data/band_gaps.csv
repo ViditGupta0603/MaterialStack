@@ -168,6 +168,7 @@ Au3S,0.0,consensus of 1 report,1,0,Zhuo 2018
 AuBrO2,0.0,consensus of 1 report,1,0,Zhuo 2018
 B,2.0,Borlido 2019,1,2,Borlido 2019
 B2Mo(PbO2)6,2.9,consensus of 1 report,1,2.9,Zhuo 2018
+B2O3,4.895,consensus of 2 reports,2,4.89; 4.9,Zhuo 2018
 B2Se2O7,4.64,consensus of 1 report,1,4.64,Zhuo 2018
 B3H2Pb2O7.5,4.42,consensus of 1 report,1,4.42,Zhuo 2018
 B3Pb10Br3O13,3.25,consensus of 1 report,1,3.25,Zhuo 2018
@@ -215,6 +216,7 @@ Ba2B6H4O13,6.53,consensus of 1 report,1,6.53,Zhuo 2018
 Ba2B6O11,5.17,consensus of 1 report,1,5.17,Zhuo 2018
 Ba2CaOsO6,0.0,consensus of 1 report,1,0,Zhuo 2018
 Ba2CaReO6,0.0,consensus of 1 report,1,0,Zhuo 2018
+Ba2Cd(BO2)6,4.59,consensus of 1 report,1,4.59,Zhuo 2018
 Ba2Ce2O5,0.0,consensus of 1 report,1,0,Zhuo 2018
 Ba2CeInTe5,1.35,consensus of 1 report,1,1.35,Zhuo 2018
 Ba2CoWO6,0.0,consensus of 1 report,1,0,Zhuo 2018
@@ -379,6 +381,7 @@ BaAl4Se7,3.4,consensus of 1 report,1,3.4,Zhuo 2018
 BaAlCu4O7,0.0,consensus of 1 report,1,0,Zhuo 2018
 BaAu(IO3)5,2.32,consensus of 1 report,1,2.32,Zhuo 2018
 BaAu2,0.0,consensus of 1 report,1,0,Zhuo 2018
+BaB6,2.64,consensus of 1 report,1,2.64,Zhuo 2018
 BaBClF4,6.89,consensus of 1 report,1,6.89,Zhuo 2018
 BaBSbS4,2.7,Borlido 2019,2,2.34; 2.7,Borlido 2019; Zhuo 2018
 BaBiBS4,2.34,Borlido 2019,1,2.34,Borlido 2019
@@ -388,6 +391,7 @@ BaCaSn3,0.0,consensus of 1 report,1,0,Zhuo 2018
 BaCdSnS4,2.3,consensus of 1 report,1,2.3,Zhuo 2018
 BaCl2,7.0,Borlido 2019,1,7,Borlido 2019
 BaCu2GeS4,2.47,Borlido 2019,1,2.47,Borlido 2019
+BaCu2SnSe3S,1.59,curated literature,1,1.59,curated literature
 BaCu2SnSe4,1.72,Borlido 2019,2,0.48; 1.72,Borlido 2019; Zhuo 2018
 BaCuSbS3,2.0,consensus of 1 report,1,2,Zhuo 2018
 BaCuSbSe3,1.6,consensus of 1 report,1,1.6,Zhuo 2018
@@ -668,6 +672,7 @@ CaS,4.43,Borlido 2019,4,4.43; 5.38; 5.4; 6,Borlido 2019; Zhuo 2018
 CaSe,3.85,Borlido 2019,3,3.85; 4.87; 5,Borlido 2019; Zhuo 2018
 CaSnO3,4.4,Borlido 2019,2,4.4; 4.4,Borlido 2019; Zhuo 2018
 CaTaNO2,2.4,consensus of 1 report,1,2.4,Zhuo 2018
+CaTe,4.185,consensus of 2 reports,2,4.07; 4.3,Zhuo 2018
 CaTi4O8,0.0,consensus of 1 report,1,0,Zhuo 2018
 CaTiO2,0.0,consensus of 1 report,1,0,Zhuo 2018
 CaVO2,0.0,consensus of 1 report,1,0,Zhuo 2018
@@ -1096,6 +1101,7 @@ CsDy9(Cd2Se9)2,1.99,consensus of 1 report,1,1.99,Zhuo 2018
 CsEr9(Cd2Se9)2,2.09,consensus of 1 report,1,2.09,Zhuo 2018
 CsErZnSe3,2.595,consensus of 2 reports,2,2.56; 2.63,Zhuo 2018
 CsEuF3,0.0,consensus of 1 report,1,0,Zhuo 2018
+CsF,10.0,consensus of 1 report,1,10,Zhuo 2018
 CsGa(SnSe3)2,1.87,consensus of 1 report,1,1.87,Zhuo 2018
 CsGa7,0.0,consensus of 1 report,1,0,Zhuo 2018
 CsGaS3,3.0,consensus of 1 report,1,3,Zhuo 2018
@@ -1499,6 +1505,7 @@ FeCoAs,0.0,consensus of 1 report,1,0,Zhuo 2018
 FeCuS2,0.5,consensus of 3 reports,3,0.43; 0.5; 0.53,Zhuo 2018
 FeCuSe2,0.155,consensus of 2 reports,2,0.15; 0.16,Zhuo 2018
 FeCuTe2,0.16,consensus of 1 report,1,0.16,Zhuo 2018
+FeI2,5.15,consensus of 1 report,1,5.15,Zhuo 2018
 FeOF,0.0,consensus of 1 report,1,0,Zhuo 2018
 FeP,0.0,consensus of 1 report,1,0,Zhuo 2018
 FeP2,0.37,Borlido 2019,1,0.37,Borlido 2019
@@ -1851,6 +1858,7 @@ Ho2GeS5,2.5,consensus of 1 report,1,2.5,Zhuo 2018
 Ho2HfS5,1.0,consensus of 1 report,1,1,Zhuo 2018
 Ho2O3,5.42,consensus of 1 report,1,5.42,Zhuo 2018
 Ho2Pd2Pb,0.0,consensus of 1 report,1,0,Zhuo 2018
+Ho2S3,0.5,consensus of 1 report,1,0.5,Zhuo 2018
 Ho3AlC,0.0,consensus of 1 report,1,0,Zhuo 2018
 Ho3GaC,0.0,consensus of 1 report,1,0,Zhuo 2018
 Ho3Ge5,0.0,consensus of 1 report,1,0,Zhuo 2018
@@ -2096,6 +2104,7 @@ K2PdSe10,1.48,consensus of 1 report,1,1.48,Zhuo 2018
 K2RbSb,1.2,consensus of 1 report,1,1.2,Zhuo 2018
 K2ReH9,5.71,consensus of 1 report,1,5.71,Zhuo 2018
 K2RuCl6,0.0,consensus of 1 report,1,0,Zhuo 2018
+K2S,2.1,consensus of 1 report,1,2.1,Zhuo 2018
 K2Sb8Se3,1.31,consensus of 1 report,1,1.31,Zhuo 2018
 K2Se,1.8,consensus of 1 report,1,1.8,Zhuo 2018
 K2Sm2Ti3O10,3.26,consensus of 1 report,1,3.26,Zhuo 2018
@@ -2184,6 +2193,7 @@ KCuPO4,0.0,consensus of 1 report,1,0,Zhuo 2018
 KCuSnS3,1.47,consensus of 1 report,1,1.47,Zhuo 2018
 KCuSnSe3,1.04,consensus of 1 report,1,1.04,Zhuo 2018
 KEuAsS4,1.89,consensus of 1 report,1,1.89,Zhuo 2018
+KF,10.3,consensus of 1 report,1,10.3,Zhuo 2018
 KFe2BiO5,1.76,consensus of 1 report,1,1.76,Zhuo 2018
 KFeCuTe2,1.06,consensus of 1 report,1,1.06,Zhuo 2018
 KGaSe2,2.6,consensus of 1 report,1,2.6,Zhuo 2018
@@ -2242,6 +2252,7 @@ KV6O11,0.0,consensus of 1 report,1,0,Zhuo 2018
 KY(TeO3)2,3.8,consensus of 1 report,1,3.8,Zhuo 2018
 KYb2F7,0.0,consensus of 1 report,1,0,Zhuo 2018
 KYbSe2,0.0,consensus of 1 report,1,0,Zhuo 2018
+KZn4(BO3)3,2.32,consensus of 1 report,1,2.32,Zhuo 2018
 KZrPSe6,2.0,consensus of 1 report,1,2,Zhuo 2018
 Kr,11.59,Borlido 2019,1,11.59,Borlido 2019
 La(FeAs3)4,0.0,consensus of 1 report,1,0,Zhuo 2018
@@ -2262,6 +2273,7 @@ La20Cu9O40,0.0,consensus of 1 report,1,0,Zhuo 2018
 La20Mo12Cl4O63,2.4,consensus of 1 report,1,2.4,Zhuo 2018
 La2B4Rh5,0.0,consensus of 1 report,1,0,Zhuo 2018
 La2CuO4,0.0,consensus of 1 report,1,0,Zhuo 2018
+La2Fe(SeO)2,0.7,consensus of 1 report,1,0.7,Zhuo 2018
 La2Fe2I,0.0,consensus of 1 report,1,0,Zhuo 2018
 La2Ga0.33Sb1S5,1.76,consensus of 1 report,1,1.76,Zhuo 2018
 La2Ga2GeS8,2.78,consensus of 1 report,1,2.78,Zhuo 2018
@@ -2620,6 +2632,7 @@ LiFe2(SiO4)2,0.0,consensus of 1 report,1,0,Zhuo 2018
 LiGa(GeSe3)2,2.64,consensus of 1 report,1,2.64,Zhuo 2018
 LiGaAg2,0.0,consensus of 1 report,1,0,Zhuo 2018
 LiGaAu2,0.0,consensus of 1 report,1,0,Zhuo 2018
+LiGaO2,5.6,consensus of 1 report,1,5.6,Zhuo 2018
 LiGaPd2,0.0,consensus of 1 report,1,0,Zhuo 2018
 LiGaPt2,0.0,consensus of 1 report,1,0,Zhuo 2018
 LiGaS2,3.69,consensus of 2 reports,2,3.62; 3.76,Zhuo 2018
@@ -2699,6 +2712,7 @@ LiYbPb,0.0,consensus of 1 report,1,0,Zhuo 2018
 LiZn(Fe5O8)2,0.0,consensus of 1 report,1,0,Zhuo 2018
 LiZn2GaO4,4.0,consensus of 1 report,1,4,Zhuo 2018
 LiZnAs,1.61,Borlido 2019,1,1.61,Borlido 2019
+LiZnBO3,3.1,consensus of 1 report,1,3.1,Zhuo 2018
 LiZnN,1.91,Borlido 2019,3,1.91; 1.91; 1.98,Borlido 2019; Zhuo 2018
 LiZnP,2.04,Borlido 2019,1,2.04,Borlido 2019
 LiZr2Os,0.0,consensus of 1 report,1,0,Zhuo 2018
@@ -2827,6 +2841,7 @@ MgRhF6,0.0,consensus of 1 report,1,0,Zhuo 2018
 MgSbPt,0.0,consensus of 1 report,1,0,Zhuo 2018
 MgSc,0.0,consensus of 1 report,1,0,Zhuo 2018
 MgScAg2,0.0,consensus of 1 report,1,0,Zhuo 2018
+MgSe,5.63,consensus of 3 reports,3,5.6; 5.63; 6,Zhuo 2018
 MgSi7Ir3,0.0,consensus of 1 report,1,0,Zhuo 2018
 MgSiN2,4.05,consensus of 1 report,1,4.05,Zhuo 2018
 MgSiP2,2.41,Borlido 2019,1,2.41,Borlido 2019
@@ -2881,6 +2896,7 @@ MnCdO2,0.0,consensus of 1 report,1,0,Zhuo 2018
 MnCoSi,0.0,consensus of 1 report,1,0,Zhuo 2018
 MnCu2Sn,0.0,consensus of 1 report,1,0,Zhuo 2018
 MnCu3,0.0,consensus of 1 report,1,0,Zhuo 2018
+MnF2,9.9,consensus of 1 report,1,9.9,Zhuo 2018
 MnFeAs,0.0,consensus of 1 report,1,0,Zhuo 2018
 MnFeCoGe,0.0,consensus of 1 report,1,0,Zhuo 2018
 MnGaNi2,0.0,consensus of 1 report,1,0,Zhuo 2018
@@ -2893,6 +2909,7 @@ MnInCu2,0.0,consensus of 1 report,1,0,Zhuo 2018
 MnNbO4,0.0,consensus of 1 report,1,0,Zhuo 2018
 MnNi,0.0,consensus of 1 report,1,0,Zhuo 2018
 MnNiP,0.0,consensus of 1 report,1,0,Zhuo 2018
+MnO,3.6,consensus of 1 report,1,3.6,Zhuo 2018
 MnO2,1.3,consensus of 1 report,1,1.3,Zhuo 2018
 MnP2,0.0,consensus of 1 report,1,0,Zhuo 2018
 MnP4,0.28,consensus of 1 report,1,0.28,Zhuo 2018
@@ -3032,6 +3049,7 @@ NaNbSe2O7,3.725,consensus of 2 reports,2,3.65; 3.8,Zhuo 2018
 NaNi2O3,0.0,consensus of 1 report,1,0,Zhuo 2018
 NaSb,0.82,consensus of 1 report,1,0.82,Zhuo 2018
 NaSb(PS3)2,2.25,Borlido 2019,3,2.17; 2.25; 2.25,Borlido 2019; Zhuo 2018
+NaSbF6,3.76,consensus of 1 report,1,3.76,Zhuo 2018
 NaSbS2,1.64,consensus of 2 reports,2,1.48; 1.8,Zhuo 2018
 NaSbSe2,1.36,consensus of 3 reports,3,1.2; 1.36; 1.6,Zhuo 2018
 NaSbTe2,0.47,consensus of 1 report,1,0.47,Zhuo 2018
@@ -3325,6 +3343,7 @@ PrMgGa,0.0,consensus of 1 report,1,0,Zhuo 2018
 PrMo3,0.0,consensus of 1 report,1,0,Zhuo 2018
 PrMoO4F,3.64,consensus of 1 report,1,3.64,Zhuo 2018
 PrNiGe2,0.0,consensus of 1 report,1,0,Zhuo 2018
+PrO,0.55,consensus of 1 report,1,0.55,Zhuo 2018
 PrP,0.0,consensus of 1 report,1,0,Zhuo 2018
 PrSb,0.66,consensus of 1 report,1,0.66,Zhuo 2018
 PrSbPt,0.0,consensus of 1 report,1,0,Zhuo 2018
@@ -3915,6 +3934,7 @@ Sr8Fe3N8,0.0,consensus of 1 report,1,0,Zhuo 2018
 SrAg,0.0,consensus of 1 report,1,0,Zhuo 2018
 SrAl,0.0,consensus of 1 report,1,0,Zhuo 2018
 SrB2,0.0,consensus of 1 report,1,0,Zhuo 2018
+SrB6,3.68,consensus of 1 report,1,3.68,Zhuo 2018
 SrBiClO2,3.52,Borlido 2019,2,3.52; 3.52,Borlido 2019; Zhuo 2018
 SrCd,0.0,consensus of 1 report,1,0,Zhuo 2018
 SrCdSi,0.0,consensus of 1 report,1,0,Zhuo 2018
@@ -4026,6 +4046,7 @@ Tb2C3,0.0,consensus of 1 report,1,0,Zhuo 2018
 Tb2EuSe4,2.0,consensus of 1 report,1,2,Zhuo 2018
 Tb2GeS5,2.1,consensus of 1 report,1,2.1,Zhuo 2018
 Tb2In16Pt7,0.0,consensus of 1 report,1,0,Zhuo 2018
+Tb2O3,3.0,consensus of 1 report,1,3,Zhuo 2018
 Tb2Sb5,0.0,consensus of 1 report,1,0,Zhuo 2018
 Tb2SbO2,0.0,consensus of 1 report,1,0,Zhuo 2018
 Tb2Ti3Ge4,0.0,consensus of 1 report,1,0,Zhuo 2018
@@ -4244,6 +4265,7 @@ TlCr5Se5S3,0.8,consensus of 1 report,1,0.8,Zhuo 2018
 TlCr5Se7S,0.71,consensus of 1 report,1,0.71,Zhuo 2018
 TlCr5Se8,0.67,consensus of 1 report,1,0.67,Zhuo 2018
 TlCr5SeS7,0.97,consensus of 1 report,1,0.97,Zhuo 2018
+TlCuCl3,2.98,consensus of 1 report,1,2.98,Zhuo 2018
 TlCuSe2,1.07,consensus of 1 report,1,1.07,Zhuo 2018
 TlGaS2,3.4,consensus of 1 report,1,3.4,Zhuo 2018
 TlGaSe2,1.65,consensus of 1 report,1,1.65,Zhuo 2018
@@ -4374,6 +4396,7 @@ VIr,0.0,consensus of 1 report,1,0,Zhuo 2018
 VIr3,0.0,consensus of 1 report,1,0,Zhuo 2018
 VNi2,0.0,consensus of 1 report,1,0,Zhuo 2018
 VNi5(PO4)6,0.0,consensus of 1 report,1,0,Zhuo 2018
+VO,0.3,consensus of 1 report,1,0.3,Zhuo 2018
 VO2,0.65,consensus of 4 reports,5,0.4; 0.5; 0.65; 0.66; 0.66,Zhuo 2018
 VP,0.0,consensus of 1 report,1,0,Zhuo 2018
 VP4,0.0,consensus of 1 report,1,0,Zhuo 2018
@@ -4546,6 +4569,7 @@ YbPO4,0.0,consensus of 1 report,1,0,Zhuo 2018
 YbPr11Se16,0.0,consensus of 1 report,1,0,Zhuo 2018
 YbPr2CuS5,1.25,consensus of 1 report,1,1.25,Zhuo 2018
 YbRh2,0.0,consensus of 1 report,1,0,Zhuo 2018
+YbS,1.1,consensus of 3 reports,3,0.98; 1.1; 1.33,Zhuo 2018
 YbSb,1.0,consensus of 1 report,1,1,Zhuo 2018
 YbSb4Te7,0.22,consensus of 1 report,1,0.22,Zhuo 2018
 YbSe,1.5,consensus of 1 report,1,1.5,Zhuo 2018
@@ -4634,6 +4658,7 @@ Zn2SnN2,0.0,consensus of 1 report,1,0,Zhuo 2018
 Zn2TeMoO7,4.1,consensus of 1 report,1,4.1,Zhuo 2018
 Zn2WN2,0.0,consensus of 1 report,1,0,Zhuo 2018
 Zn3(BO3)2,2.6,consensus of 1 report,1,2.6,Zhuo 2018
+Zn3(InS3)2,2.925,consensus of 2 reports,2,2.8; 3.05,Zhuo 2018
 Zn3(PS4)2,3.07,consensus of 1 report,1,3.07,Zhuo 2018
 Zn3.5Ga1Sn0.5O6,2.99,consensus of 1 report,1,2.99,Zhuo 2018
 Zn3As2,0.99,consensus of 8 reports,8,0.86; 0.93; 0.96; 0.98; 1; 1.09; 1.1; 1.11,Zhuo 2018
@@ -4666,6 +4691,7 @@ ZnGaRh2,0.0,consensus of 1 report,1,0,Zhuo 2018
 ZnGeAs2,1.15,Borlido 2019,4,1.05; 1.1; 1.15; 1.16,Borlido 2019; Zhuo 2018
 ZnGeN2,3.36,Borlido 2019,3,2.9; 3.2; 3.36,Borlido 2019; Zhuo 2018
 ZnGeP2,2.02,Borlido 2019,5,2; 2.02; 2.1; 2.2; 2.34,Borlido 2019; Zhuo 2018
+ZnHg3(SCl2)2,2.65,consensus of 1 report,1,2.65,Zhuo 2018
 ZnHg3(SeCl2)2,2.23,consensus of 1 report,1,2.23,Zhuo 2018
 ZnI2,4.53,consensus of 1 report,1,4.53,Zhuo 2018
 ZnIrO3,0.0,consensus of 1 report,1,0,Zhuo 2018
