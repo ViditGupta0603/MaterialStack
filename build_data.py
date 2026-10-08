@@ -43,7 +43,8 @@ MAX_GAP = 15.0            # R3: no ordinary solid has a gap above ~14 eV (LiF)
 SLIP_RATIO = 3.0          # R4: a report > 3x (and > 3 eV above) the other reports is a transcription error
 AGREE_ABS, AGREE_REL = 0.3, 0.10   # R5: reports within max(0.3 eV, 10 %) of the median agree
 MIN_AGREE = 0.5           # R5: at least half of the distinct reports must agree
-MAX_DFT_CONFLICT = 2.0    # R6: |measured − hybrid DFT| above this means a wrong phase or a typo
+MAX_DFT_CONFLICT = 2.0    # R6: |measured − hybrid DFT| above this, with one side metallic, means a wrong phase or a typo
+METALLIC = 0.1            # R6: a gap below this (eV) counts as "metal"; only metal-vs-insulator conflicts are rejected
 STABLE_WINDOW = 0.05      # eV/atom: JARVIS polymorphs used for the DFT hint (real metastable phases lie within ~50 meV)
 
 
@@ -198,8 +199,11 @@ def clean_gaps(reports: pd.DataFrame, dft: pd.DataFrame) -> tuple[pd.DataFrame, 
     reject(reports.index.isin(outlier_idx), "R5", "disagrees with the other reports for this formula")
     gaps = pd.DataFrame(rows)
 
+    # R6 only when one side says "metal": then a 0.00 entry for an insulator (or the reverse) is a typo or a
+    # different phase. Two clear gaps that disagree are kept: DFT can be the one that is wrong (CsF: 10 vs 7.5 eV).
     hyb = gaps.formula.map(dft.set_index("formula").gap_hybrid)
-    m = ~gaps.basis.str.contains("Borlido|curated") & ((gaps.gap_ev - hyb).abs() > MAX_DFT_CONFLICT)
+    metal_vs_gap = (gaps.gap_ev < METALLIC) | (hyb < METALLIC)
+    m = ~gaps.basis.str.contains("Borlido|curated") & metal_vs_gap & ((gaps.gap_ev - hyb).abs() > MAX_DFT_CONFLICT)
     conflict = gaps[m]
     for f, label, h in zip(conflict.formula, conflict.gap_ev, hyb[m]):
         mask = (reports.formula == f) & ~reports.index.isin(outlier_idx)

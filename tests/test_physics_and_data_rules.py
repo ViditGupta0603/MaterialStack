@@ -50,6 +50,14 @@ def test_cleaning_rules_reject_impossible_values_only():
     assert dict(zip(rejected.name, rejected.rule)) == {"InSe": "R4", "UO2": "R2", "Ne": "R3"}
 
 
+def test_dft_conflict_rejects_metal_vs_insulator_only():
+    r = pd.DataFrame({"name": ["BaMnO3", "CsF"], "gap_ev": [0.0, 10.0], "source": "Zhuo 2018", "reference": ""})
+    dft = pd.DataFrame({"formula": ["BaMnO3", "CsF"], "gap_gga": [1.5, 6.0], "gap_hybrid": [3.04, 7.47]})
+    gaps, rejected = clean_gaps(r, dft)
+    assert dict(zip(rejected.name, rejected.rule)) == {"BaMnO3": "R6"}   # "0.00 eV" for an insulator: a typo
+    assert list(gaps.formula) == ["CsF"]                                # 10 eV is right; DFT underestimates it
+
+
 def test_formula_key_normalises_spelling_and_phase_words():
     assert formula_key("O2Ti") == formula_key("anatase TiO2") == formula_key("TiO2 film") == "TiO2"
     assert formula_key("Spiro-OMeTAD") is None
@@ -117,3 +125,21 @@ def test_measured_interface_offset_in_both_orders():
     assert a["offset_source"].startswith("measured")
     assert a["vbo_ev"] == pytest.approx(-0.8) and b["vbo_ev"] == pytest.approx(0.8)   # CuInSe2 VBM 0.8 eV above CdS
     assert a["cbo_ev"] == pytest.approx(0.0, abs=1e-9) and b["cbo_ev"] == pytest.approx(0.0, abs=1e-9)
+
+
+@built
+def test_lowercase_formulas_and_offset_uncertainties():
+    from materialstack.predict import predict_stack, resolve_layer
+    assert resolve_layer("tio2").formula == "TiO2"
+    assert resolve_layer("sio2").formula == "SiO2"                 # not the DFT-only SIO2 (sulfur iodine oxide)
+    assert resolve_layer("Xyz").formula is None
+    j = predict_stack(["TiO2", "MAPbI3"])["junctions"][0]
+    assert j["cbo_sigma_ev"] > j["vbo_sigma_ev"] > 0               # ΔEc also carries both gap errors
+
+
+def test_cv_fold_is_fixed_by_element_system_alone():
+    from materialstack.model import element_group
+    from validate import fold_of
+    assert fold_of(element_group("CsPbI3")) == fold_of(element_group("Cs4PbI6"))   # same elements, same fold
+    assert fold_of("As-Ga") == fold_of("As-Ga")                                    # no randomness, no other data
+    assert {fold_of(f"X{i}") for i in range(200)} == {0, 1, 2, 3, 4}

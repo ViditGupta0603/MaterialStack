@@ -8,19 +8,20 @@ offsets and the junction type (I / II / III) with a confidence, so that only unc
 
 Measured values are used whenever they exist; a single ML model fills in the band gap when they don't.
 Band edges come from photoemission measurements, else hybrid-DFT surface calculations (oxides), else
-the Butler–Ginley electronegativity estimate (VBM = −χ − Eg/2). The junction type is not learned: it
+the Butler–Ginley electronegativity estimate (VBM = −χ − Eg/2; in hybrid perovskites the organic cation
+counts as Cs, since it sets no band edge). The junction type is not learned: it
 follows from the four band edges. Its probability comes from the validated error of every input.
 
 ## Set up on another computer
 
 1. On your computer: `python make_bundle.py` → `../MaterialStack_bundle.zip` (~57 MB). It contains the
    code, the downloaded source data (no internet needed for it) and the built web UI (no Node.js needed).
-2. Copy the zip over, unzip it, and install **Python 3.11 or newer** if missing (python.org; on Windows
+2. Copy the zip over, unzip it, and install **Python 3.12 or newer** if missing (python.org; on Windows
    tick "Add python.exe to PATH").
 3. In the unzipped `MaterialStack` folder run **`setup.bat`** (Windows, double-click works) or
    **`bash setup.sh`** (macOS / Linux). It creates `.venv`, installs the packages (needs internet, a few
    minutes), builds the data, trains and validates. The numbers in `results/metrics.csv` should match
-   yours (band-gap MAE 0.397 eV).
+   yours (band-gap MAE 0.404 eV).
 4. Run it: `.venv\Scripts\python -m materialstack serve` (Windows) or
    `.venv/bin/python -m materialstack serve`, then open http://127.0.0.1:8000.
 
@@ -73,17 +74,27 @@ fold, so the score is for unseen chemistry.
 
 ## Validation (results/metrics.csv)
 
-| Check | Result | Baseline |
-|---|---|---|
-| Band gap, grouped 5-fold CV (2,509 materials) | MAE 0.40 eV, R² 0.86 | 1.12 eV (mean); hybrid DFT alone 0.54 eV |
-| VBM when the measurement is hidden | Butler–Ginley 1.08 eV, hybrid-DFT surfaces 0.52 eV | — |
-| 21 measured band offsets (InterMat) | 0.45 eV (0.59 without measured edges) | 0.84 eV (ΔEv = 0) |
-| Gold device stacks: ΔEc / ΔEv sign right | 80 % / 83 % | — |
-| Gold device stacks: junction type | 61 %; 82 % for confident calls | 61 % (always Type II) |
+`validate.py` is a fixed protocol: it is never edited when the data grows. Each test set is a rule over the
+current data (all measured gaps, all measured VBMs, every row of `data/curated/validation_band_offsets.csv`,
+every gold stack), so new data joins validation automatically. Cross-validation folds are fixed by the
+element system (a hash), so adding a material never reshuffles the others. Every mean has a 95 % bootstrap
+interval (`ci_low`, `ci_high`); rerunning on unchanged data gives an identical file, so
+`git diff results/metrics.csv` shows exactly what a change did. Decide on the **primary** rows:
 
-The gold stacks' band edges are SCAPS simulation inputs, which differ from photoemission measurements
-by 0.4–0.8 eV for TiO2, SnO2, C60 and others, so type accuracy against them has a ceiling set by the
-reference itself.
+| Primary metric | Result [95 % interval] | Baseline |
+|---|---|---|
+| Band-gap MAE, unseen chemistry (2,535 materials) | 0.40 eV [0.38–0.43] | 1.13 eV (mean); hybrid DFT alone 0.59 eV |
+| VBM MAE when the measurement is hidden (44) | 0.57 eV [0.41–0.74] | — |
+| \|ΔEv\| MAE, 21 measured offsets, no measured edges | 0.59 eV [0.44–0.74] | 0.84 eV (ΔEv = 0) |
+| Gold stacks: ΔEc / ΔEv sign right | 80 % / 85 % | — |
+| Gold stacks: ΔEc / ΔEv MAE | 0.50 / 0.53 eV | 0.45 / 0.80 eV (zero offset) |
+| Junction-type Brier score (gold stacks) | 0.64 [0.55–0.73] | 0.78 (always Type II) |
+| Confident calls (≥ 80 %): correct / share of junctions | 75 % (16) / 16 % | — |
+
+Diagnostics: A2 (error by label source, chemistry and gap size; label-noise floor 0.15 eV), D (are the σ
+values in `predict.py` right; reliability table), E (data coverage). The gold stacks' band edges are SCAPS
+simulation inputs, which differ from photoemission by 0.4–0.8 eV for TiO2, SnO2, C60 and others, so type
+accuracy against them has a ceiling set by the reference itself; it is reported but not a primary metric.
 
 ## Code
 
@@ -96,7 +107,7 @@ reference itself.
 | `materialstack/predict.py` | ~240 | layers, band edges, junctions, confidence |
 | `materialstack/chem.py` | ~80 | formulas, electronegativity, Butler–Ginley |
 | `materialstack/api.py`, `cli.py` | ~120 | web API and command line |
-| `frontend/` | | React UI (`npm run build`; served by `serve`) |
+| `frontend/` | | React UI with four pages: Predict, Validation, Method, Guide (how to use + notes); `npm run build`, served by `serve` |
 | `tests/` | | `python -m pytest -q` |
 
 Literature notes, the data-credibility audit, the findings log and the change history are kept outside

@@ -6,7 +6,6 @@ from typing import Any
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -18,11 +17,10 @@ FRONTEND_DIST = ROOT / "frontend" / "dist"
 METRICS = RESULTS / "metrics.json"
 
 app = FastAPI(title="MaterialStack")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
 class PredictRequest(BaseModel):
-    materials: list[str] = Field(..., min_length=1)
+    materials: list[str] = Field(..., min_length=1, max_length=20)   # a device stack, not a batch job
 
 
 @app.get("/api/health")

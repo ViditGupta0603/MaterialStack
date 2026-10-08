@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # One-time setup on a new computer (macOS / Linux). From the MaterialStack folder run:  bash setup.sh
-# Needs Python 3.11 or newer. Takes ~5 minutes (mostly installing packages).
+# Needs Python 3.12 or newer. Takes ~5 minutes (mostly installing packages).
 set -eo pipefail
 cd "$(dirname "$0")"
 PY="${PYTHON:-python3}"
 
-"$PY" -c 'import sys; assert sys.version_info >= (3, 11), f"Python 3.11 or newer is needed, found {sys.version.split()[0]}"'
+"$PY" -c 'import sys; assert sys.version_info >= (3, 12), f"Python 3.12 or newer is needed, found {sys.version.split()[0]}"'
 echo "== 1/5 creating the virtual environment (.venv)"
 "$PY" -m venv .venv
 .venv/bin/python -m pip install --quiet --upgrade pip

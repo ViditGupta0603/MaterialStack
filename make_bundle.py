@@ -13,7 +13,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT.parent / "MaterialStack_bundle.zip"
 SKIP_DIRS = {".git", ".venv", "node_modules", "__pycache__", ".pytest_cache", "results", ".claude"}
-SKIP_FILES = {"sawals.txt"}                                   # personal notes
 SKIP_BUILT = {"data/band_gaps.csv", "data/band_gaps_rejected.csv", "data/dft_gaps.csv", "data/band_edges.csv",
               "data/features.csv", "models/gap_model.joblib"}  # rebuilt by setup in seconds
 
@@ -26,7 +25,7 @@ n = 0
 with zipfile.ZipFile(OUT, "w", zipfile.ZIP_DEFLATED) as z:
     for p in sorted(ROOT.rglob("*")):
         rel = p.relative_to(ROOT)
-        if (p.is_dir() or set(rel.parts) & SKIP_DIRS or p.name in SKIP_FILES or rel.as_posix() in SKIP_BUILT
+        if (p.is_dir() or set(rel.parts) & SKIP_DIRS or rel.as_posix() in SKIP_BUILT
                 or p.name.startswith(".~lock")):                      # LibreOffice lock files
             continue
         z.write(p, Path("MaterialStack") / rel)

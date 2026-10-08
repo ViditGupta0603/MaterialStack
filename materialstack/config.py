@@ -12,6 +12,7 @@ CURATED = DATA / "curated"                           # hand-made, cited tables (
 MEASURED_EDGES = CURATED / "measured_band_edges.csv"
 MEASURED_OFFSETS = CURATED / "measured_band_offsets.csv"
 ALIASES = CURATED / "aliases.csv"
+VALIDATION_OFFSETS = CURATED / "validation_band_offsets.csv"   # measured offsets used only to score the tool
 
 # Built by build_data.py
 BAND_GAPS = DATA / "band_gaps.csv"                   # one measured gap per material (training labels + lookup)

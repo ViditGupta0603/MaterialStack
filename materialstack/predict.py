@@ -27,7 +27,7 @@ import pandas as pd
 from pymatgen.core import Element
 
 from materialstack import model
-from materialstack.chem import butler_ginley_vbm, elements, formula_key, mulliken_chi, to_float
+from materialstack.chem import butler_ginley_vbm, elements, formula_key, inorganic_surrogate, mulliken_chi, to_float
 from materialstack.config import ALIASES, BAND_EDGES, BAND_GAPS, MEASURED_OFFSETS
 
 SURFACE_WEIGHT = 0.8        # weight of the hybrid-DFT surface VBM against Butler–Ginley (chosen on benchmarks)
@@ -38,7 +38,9 @@ SIGMA_GAP = {"measured": 0.2,            # scatter between independent compilati
              "ML": 0.5}                  # cross-validated MAE of the model 0.40 eV
 SIGMA_VBM = {"measured": 0.25,           # photoemission values of one material differ by ~0.2–0.3 eV
              "surface": 0.65,            # hybrid-DFT surfaces vs measured VBM: MAE 0.52 eV (5 materials)
-             "estimate": 1.3}            # Butler–Ginley vs measured VBM: MAE 1.08 eV (35 materials)
+             "estimate": 1.3}            # Butler–Ginley vs measured VBM: RMS 0.82 eV (39 materials), but CuI, CuSCN
+#                                          and NiO are 1.9–2.5 eV too deep; on the device stacks σ 0.6–1.0 made
+#                                          "≥ 80 %" calls right only 64–67 % of the time, 1.3 keeps them at 75 %
 SIGMA_MEASURED_OFFSET = 0.2              # photoemission interface offsets are quoted ±0.1–0.2 eV
 CONFIDENT = 0.8                          # below this probability a junction is flagged "check with DFT"
 N_SAMPLES = 4000
@@ -77,7 +79,22 @@ def _tables() -> dict[str, Any]:
         "measured_edges": edges[edges.basis == "measured"].set_index("formula"),
         "surface_edges": edges[edges.basis == "hybrid-DFT surfaces"].set_index("formula"),
         "offsets": offsets,
+        "by_lowercase": _lowercase_index(edges.formula),
     }
+
+
+def _lowercase_index(edge_formulas: pd.Series) -> dict[str, str]:
+    """'tio2' → 'TiO2' for every formula the tool has data for, when the lowercase spelling is unambiguous.
+    Formulas with measured data come first, so 'sio2' is SiO2 and not the DFT-only SIO2 (sulfur iodine oxide)."""
+    index: dict[str, str] = {}
+    for known in (set(pd.read_csv(BAND_GAPS).formula) | set(edge_formulas), set(model.dft_table().index)):
+        seen: dict[str, set[str]] = {}
+        for f in known:
+            seen.setdefault(str(f).lower(), set()).add(str(f))
+        for k, v in seen.items():
+            if k not in index and len(v) == 1:
+                index[k] = next(iter(v))
+    return index
 
 
 # --------------------------------------------------------------------------- one layer
@@ -90,10 +107,15 @@ def resolve_layer(name: str, use_measured_edges: bool = True) -> Layer:
     if target.startswith("organic:"):
         return _organic_layer(name, target, use_measured_edges)
     formula = formula_key(target)
+    if formula is None and target.lower() in t["by_lowercase"]:      # 'tio2': formulas are case-sensitive
+        formula = target = t["by_lowercase"][target.lower()]
     layer = Layer(query=name, formula=formula, display_formula=target)
     if formula is None:
-        layer.notes.append("not a chemical formula and not a known layer name (add it to data/curated/aliases.csv)")
+        layer.notes.append("unknown name: not a chemical formula or a known layer name. Check the spelling; "
+                           "formulas are case-sensitive (TiO2, not tio2)")
         return layer
+    if target != name.strip() and name.strip().lower() == target.lower():
+        layer.notes.append(f"read as {target}")
 
     # Band gap: measured, else metal (only metallic elements, e.g. Au, Ag, Al contacts), else ML
     if formula in t["gaps"].index:
@@ -112,11 +134,13 @@ def resolve_layer(name: str, use_measured_edges: bool = True) -> Layer:
         hint = X.dft_gap_hybrid.iloc[0] if pd.notna(X.dft_gap_hybrid.iloc[0]) else X.dft_gap_gga.iloc[0]
         layer.gap_source = ("ML model, using a DFT gap of {:.2f} eV as a hint".format(hint) if pd.notna(hint)
                             else "ML model, from the formula only (no DFT data for this formula)")
+        if inorganic_surrogate(formula) != formula:
+            layer.gap_source += f"; organic cation counted as Cs ({inorganic_surrogate(formula)})"
     if layer.gap_ev <= METAL_GAP:
         layer.notes.append("metal: no band gap, so it does not form a semiconductor junction")
 
     # Band edges: measured → hybrid-DFT surfaces → Butler–Ginley
-    chi = mulliken_chi(formula)
+    chi = mulliken_chi(inorganic_surrogate(formula))      # MAPbI3 → χ of CsPbI3: the organic cation sets no band edge
     if use_measured_edges and formula in t["measured_edges"].index:
         row = t["measured_edges"].loc[formula]
         layer.vbm_ev = float(row.vbm_ev)
@@ -148,8 +172,8 @@ def _organic_layer(name: str, target: str, use_measured_edges: bool) -> Layer:
     layer = Layer(query=name, formula=target, display_formula=target.split(":", 1)[1])
     edges = _tables()["measured_edges"]
     if not use_measured_edges or target not in edges.index or pd.isna(edges.loc[target].cbm_ev):
-        layer.notes.append("organic layer without a measured ionization energy and electron affinity "
-                           "(add one to data/curated/measured_band_edges.csv)")
+        layer.notes.append("organic layer with no measured ionization energy and electron affinity in the data, "
+                           "so its levels cannot be placed (the model only handles inorganic formulas)")
         return layer
     row = edges.loc[target]
     layer.vbm_ev, layer.cbm_ev = float(row.vbm_ev), float(row.cbm_ev)
@@ -221,11 +245,12 @@ def classify_junction(top: Layer, bottom: Layer, use_measured_edges: bool = True
         s_vbo = math.hypot(SIGMA_VBM[top.edge_kind], SIGMA_VBM[bottom.edge_kind])
         source = "vacuum alignment of the two layers (Anderson's rule)"
     cbo = -vbo + gap_b - gap_t
+    s_cbo = math.sqrt(s_vbo ** 2 + SIGMA_GAP[top.gap_kind] ** 2 + SIGMA_GAP[bottom.gap_kind] ** 2)
     jtype = junction_type(0.0, gap_t, -vbo, -vbo + gap_b)
     probs = type_probabilities(gap_t, gap_b, vbo, SIGMA_GAP[top.gap_kind], SIGMA_GAP[bottom.gap_kind], s_vbo)
     conf = probs[jtype]
-    return {**out, "type": jtype, "vbo_ev": vbo, "cbo_ev": cbo, "vbo_sigma_ev": s_vbo,
-            "margin_ev": min(abs(vbo), abs(cbo)), "offset_source": source, "type_probabilities": probs,
+    return {**out, "type": jtype, "vbo_ev": vbo, "cbo_ev": cbo, "vbo_sigma_ev": s_vbo, "cbo_sigma_ev": s_cbo,
+            "offset_source": source, "type_probabilities": probs,
             "confidence": conf, "uncertain": conf < CONFIDENT,
             "reason": "check with DFT" if conf < CONFIDENT else "confident"}
 

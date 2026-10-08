@@ -1,13 +1,13 @@
 @echo off
 rem One-time setup on a new Windows computer. Double-click this file, or run  setup.bat  in the MaterialStack folder.
-rem Needs Python 3.11 or newer from python.org (tick "Add python.exe to PATH" when installing).
+rem Needs Python 3.12 or newer from python.org (tick "Add python.exe to PATH" when installing).
 rem Takes ~5 minutes (mostly installing packages).
 setlocal
 cd /d "%~dp0"
 set PYTHONUTF8=1
 
 where py >nul 2>nul && (set "PY=py -3") || (set "PY=python")
-%PY% -c "import sys; assert sys.version_info >= (3, 11), 'Python 3.11 or newer is needed, found ' + sys.version.split()[0]" || goto :error
+%PY% -c "import sys; assert sys.version_info >= (3, 12), 'Python 3.12 or newer is needed, found ' + sys.version.split()[0]" || goto :error
 
 echo == 1/5 creating the virtual environment (.venv)
 %PY% -m venv .venv || goto :error

@@ -31,7 +31,7 @@ def cmd_predict(args: argparse.Namespace) -> None:
             continue
         p = j["type_probabilities"]
         print(f"{j['interface']:30s} Type {j['type']:3s} ({j['confidence']:.0%}{', check with DFT' if j['uncertain'] else ''})"
-              f"  ΔEv {j['vbo_ev']:+.2f} ± {j['vbo_sigma_ev']:.2f} eV, ΔEc {j['cbo_ev']:+.2f} eV"
+              f"  ΔEv {j['vbo_ev']:+.2f} ± {j['vbo_sigma_ev']:.2f} eV, ΔEc {j['cbo_ev']:+.2f} ± {j['cbo_sigma_ev']:.2f} eV"
               f"  [I {p['I']:.0%} / II {p['II']:.0%} / III {p['III']:.0%}]  offset: {j['offset_source'][:45]}")
 
 
